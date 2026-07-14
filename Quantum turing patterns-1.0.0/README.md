@@ -10,16 +10,6 @@ summaries, and integrity records needed to verify them.
 **License:** MIT  
 **Release:** 1.0.0
 
-<p align="center">
-  <a href="display/display_labyrinth_pattern.mp4">
-    <img
-      src="docs/labyrinth-preview.gif"
-      alt="Formation of a labyrinth quantum Turing pattern"
-      width="720"
-    >
-  </a>
-</p>
-
 ## Package contents
 
 - `qtp_explorer.ipynb` provides the interactive research interface.
