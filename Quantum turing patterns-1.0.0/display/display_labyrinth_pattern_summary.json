@@ -1,0 +1,222 @@
+{
+  "schema_version": "1.0",
+  "case": "labyrinth",
+  "mode": "certified_demo",
+  "run_scope": "reference",
+  "claim_level": "numerical_reference_demonstration",
+  "release_version": "1.0.0",
+  "parameters": {
+    "L": 128,
+    "dt": 0.05,
+    "T": 80.0,
+    "frame_dt": 1.0,
+    "Omega": 1.8,
+    "Dq": 0.6,
+    "Dp": 4.5,
+    "nu": 4.0,
+    "beta": 0.4,
+    "seed": 0,
+    "bump_amp": 0.12,
+    "bump_width": 2.4,
+    "n_bumps": 32,
+    "p_to_q_ratio": -0.25,
+    "additive_noise": 0.001,
+    "noise_scale": 0.01,
+    "init_kind": "labyrinth",
+    "pattern_covector": [
+      1.0,
+      -0.4
+    ],
+    "fastest_linear_mode_k": 0.6491851977897728,
+    "fastest_linear_right_eigenvector": [
+      1.0,
+      -0.3651541709271028
+    ]
+  },
+  "initial_condition": {
+    "type": "independent_gaussian_noise",
+    "rng": "numpy.PCG64",
+    "seed": 0,
+    "noise_scale": 0.01
+  },
+  "notebook_execution": null,
+  "storage_precision": {
+    "time_series": "float32",
+    "final_state": "float64"
+  },
+  "grid": {
+    "pattern_L": 128,
+    "pattern_extent": "0..128"
+  },
+  "movie_plan": {
+    "frame_times": [
+      0.0,
+      1.0,
+      2.0,
+      4.0,
+      5.0,
+      6.0,
+      8.0,
+      9.0,
+      10.0,
+      12.0,
+      13.0,
+      14.0,
+      16.0,
+      17.0,
+      18.0,
+      20.0,
+      21.0,
+      22.0,
+      24.0,
+      25.0,
+      26.0,
+      28.0,
+      29.0,
+      30.0,
+      32.0,
+      33.0,
+      34.0,
+      36.0,
+      37.0,
+      38.0,
+      40.0,
+      41.0,
+      42.0,
+      44.0,
+      45.0,
+      46.0,
+      48.0,
+      49.0,
+      50.0,
+      52.0,
+      53.0,
+      54.0,
+      56.0,
+      57.0,
+      58.0,
+      60.0,
+      61.0,
+      62.0,
+      64.0,
+      65.0,
+      66.0,
+      68.0,
+      69.0,
+      70.0,
+      72.0,
+      73.0,
+      74.0,
+      76.0,
+      77.0,
+      78.0,
+      80.0
+    ],
+    "n_frames_expected": 61,
+    "fps": 8,
+    "expected_final_time": 80.0,
+    "field_vmin": -0.24,
+    "field_vmax": 0.24,
+    "layout": "single_pattern_panel"
+  },
+  "computed_quantities": {
+    "k_dom": 0.6381360077604268,
+    "k_dom_definition": "maximum_nonzero_radial_mean_tie_to_smaller_radius",
+    "shell_concentration": 0.5745598681906761,
+    "shell_width": 0.04908738521234052,
+    "spectrum_normalization": "unitary_1_over_sqrt_volume",
+    "stationary_residual": 0.007903975517800166,
+    "stationary_residual_definition": "||F(q_final,p_final)||_2 / ||(q_final,p_final)||_2",
+    "finite_run_state": "PASS"
+  },
+  "numerical_observable_contract": {
+    "field_preprocessing": "subtract_spatial_mean",
+    "dft_normalization": "unitary_1_over_sqrt_volume",
+    "wavevector_grid": "k_j=2*pi*n_j/L",
+    "radial_bin_width": "2*pi/L",
+    "radial_bin_rule": "half_open_centered_annuli",
+    "radial_bin_statistic": "arithmetic_mean_power",
+    "dominant_mode_rule": "maximum_nonzero_radial_mean_tie_to_smaller_radius",
+    "shell_half_width": "one_fourier_spacing=2*pi/L",
+    "coordinate_convention": "real_space_axes_x_over_L_y_over_L"
+  },
+  "persistence_checks": {
+    "window_frames": 6,
+    "relative_field_change": 0.00799295684744043,
+    "final_frame_correlation": 0.9999694172024247,
+    "k_dom_std_final_window": 0.0,
+    "shell_concentration_min_final_window": 0.5683156076854198,
+    "passed": true,
+    "thresholds": {
+      "relative_field_change_max": 0.02,
+      "final_frame_correlation_min": 0.999,
+      "k_dom_std_max": 0.02,
+      "shell_concentration_min": 0.5
+    },
+    "scope": "finite-run pattern stability check"
+  },
+  "finite_value_checks": {
+    "q_frames": true,
+    "p_frames": true,
+    "R_frames": true,
+    "times": true,
+    "R_final_float64": true,
+    "radial_k": true,
+    "radial_power": true
+  },
+  "verification_tolerances": {
+    "numerical_comparison_rtol": 1e-07,
+    "numerical_comparison_atol": 1e-10,
+    "movie_fps_atol": 0.2
+  },
+  "certification_scope": {
+    "mode": "certified_demo",
+    "run_scope": "reference",
+    "claim_level": "numerical_reference_demonstration",
+    "reference_configuration_exact": true,
+    "pattern_checks_passed": true,
+    "finite_run_state": "PASS",
+    "theorem_level_claimed": false,
+    "current_output_verified": true,
+    "current_output_verification": {
+      "status": "pass",
+      "checked_at": "2026-07-14T19:25:25.232165+00:00",
+      "report": "display/display_verification_report.csv",
+      "file_integrity": true,
+      "pattern_checks": true
+    },
+    "bundled_reference_verified": true,
+    "bundled_reference_verification": {
+      "status": "pass",
+      "checked_at": "2026-07-14T19:25:25.232165+00:00",
+      "report": "display/display_verification_report.csv",
+      "file_integrity": true,
+      "pattern_checks": true
+    },
+    "note": "The theorem-level designation applies only to the exact Stripe reference parameters. Spot and Labyrinth are numerical reference examples. Modified or preview runs are exploratory."
+  },
+  "verification": {
+    "no_nan": true,
+    "spectral_selection_passed": true,
+    "persistence_passed": true,
+    "pattern_checks_passed": true,
+    "finite_run_state": "PASS",
+    "theorem_level_claimed": false
+  },
+  "software": {
+    "python": "3.13.5",
+    "supported_environment": "qtp-display Python 3.13, see environment.yml",
+    "numpy": "2.3.5",
+    "matplotlib": "3.10.8",
+    "imageio": "2.37.3"
+  },
+  "movie_file": {
+    "path": "display_labyrinth_pattern.mp4",
+    "sha256": "4638646ecd6b349ca46a9c71d34ced45d35f376ff6131f8713758ef99e1a0149",
+    "size_bytes": 3424552,
+    "n_frames": 61,
+    "fps": 8.0,
+    "width": 1024,
+    "height": 1024
+  }
+}

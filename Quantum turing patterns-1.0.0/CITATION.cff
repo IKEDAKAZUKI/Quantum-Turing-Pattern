@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "Quantum Turing Patterns — Interactive Display"
+type: software
+authors:
+  - family-names: "Ikeda"
+    given-names: "Kazuki"
+version: "1.0.0"
+date-released: "2026-07-14"
+license: MIT

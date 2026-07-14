@@ -1,0 +1,4 @@
+case,mode,filename,sha256,size_bytes,n_frames,fps,width,height,duration,physical_final_time,layout,ok
+labyrinth,pattern,display_labyrinth_pattern.mp4,4638646ecd6b349ca46a9c71d34ced45d35f376ff6131f8713758ef99e1a0149,3424552,61,8.0,1024,1024,7.63,80.0,single_pattern_panel,True
+spot,pattern,display_spot_pattern.mp4,ac56cb764783c575cd11dc8b0b8389f90318bd6527e3d51bd0ff37eac722cd71,2482648,61,8.0,1024,1024,7.63,50.0,single_pattern_panel,True
+stripe,pattern,display_stripe_pattern.mp4,d5ec0c5aef89c21913d3648fede6addd6d123f31f988128b7b3abf6697631020,1060427,61,8.0,1024,1024,7.63,160.0,single_pattern_panel,True
