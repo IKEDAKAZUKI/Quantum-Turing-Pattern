@@ -10,6 +10,22 @@ summaries, and integrity records needed to verify them.
 **License:** MIT  
 **Release:** 1.0.0
 
+# Quantum Turing Patterns — Interactive Display
+
+<p align="center">
+  <a href="docs/qtp-overview.mp4">
+    <img
+      src="docs/qtp-overview.gif"
+      alt="Formation of spot, labyrinth, and stripe quantum Turing patterns"
+      width="720"
+    >
+  </a>
+</p>
+
+<p align="center">
+  <em>Spot → Labyrinth → Stripe. Click the animation to open the full-quality video.</em>
+</p>
+
 ## Package contents
 
 - `qtp_explorer.ipynb` provides the interactive research interface.
