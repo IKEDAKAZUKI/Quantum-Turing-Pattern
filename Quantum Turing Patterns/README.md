@@ -1,4 +1,4 @@
-# Quantum Turing Patterns — Interactive Display
+# Quantum Turing Patterns — Demonstration
 
 This release contains the software and reference results for the three display
 cases associated with **Quantum Turing Patterns: A Constructive Quantum Markov
