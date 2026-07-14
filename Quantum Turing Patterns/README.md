@@ -2,7 +2,7 @@
 
 This release contains the software and reference results for the three display
 cases associated with **Quantum Turing Patterns: A Constructive Quantum Markov
-Realization**. It includes an interactive research notebook, a museum exhibit,
+Realization**. It includes an interactive research notebook, a demonstration,
 the numerical kernels used to generate the results, and the figures, movies,
 summaries, and integrity records needed to verify them.
 
@@ -64,7 +64,7 @@ when interactive controls are unavailable.
 Convenience launchers are provided as `start_qtp_explorer.sh` and
 `start_qtp_explorer.bat`.
 
-## Museum exhibit
+## Exhibit
 
 Start the exhibit with:
 
