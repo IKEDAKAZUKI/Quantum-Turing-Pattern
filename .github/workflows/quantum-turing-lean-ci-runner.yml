@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Materialize exact modular Lean project
+      - name: Materialize the repaired exact modular Lean project
         shell: bash
         run: |
           set -euo pipefail
@@ -27,6 +27,11 @@ jobs:
             | tar -xzf - -C qtp-project
           echo 'bd7d28eb94535b4f797dd44e9df83c1aa1ca98df5f338e13f22875acbe5fcc8a  /tmp/qtp-project.tar.gz' \
             | sha256sum --check
+          base64 --decode .lean-ci/apply_qtp_fixes.py.gz.b64 \
+            | gzip --decompress > /tmp/apply_qtp_fixes.py
+          echo '738f8a34ed84d34fdf25874a8d31a3317c0e1446b5d74fe8738944688f963671  /tmp/apply_qtp_fixes.py' \
+            | sha256sum --check
+          python3 /tmp/apply_qtp_fixes.py qtp-project
           test "$(find qtp-project/QuantumTuringPatterns -name '*.lean' | wc -l)" -eq 9
           test -f qtp-project/QuantumTuringPatterns.lean
           cd qtp-project
@@ -34,7 +39,7 @@ jobs:
           cat lean-toolchain
           cat lakefile.toml
 
-      - name: Install Lean and make the first exact build attempt
+      - name: Install Lean and make the first repaired build attempt
         continue-on-error: true
         uses: leanprover/lean-action@v1
         with:
@@ -44,7 +49,7 @@ jobs:
           leanchecker: false
           nanoda: false
 
-      - name: Re-run exact modular lake build and capture the complete log
+      - name: Re-run repaired modular lake build and capture the complete log
         shell: bash
         run: |
           set +e
@@ -54,11 +59,11 @@ jobs:
           tail -n 240 ../lake-build.log
           exit "$status"
 
-      - name: Upload exact-project verification evidence
+      - name: Upload repaired-project verification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qtp-exact-project-verification
+          name: qtp-repaired-project-verification
           path: |
             lake-build.log
             qtp-project/STATIC_AUDIT.md
