@@ -66,7 +66,7 @@ jobs:
         run: |
           set +e
           cd qtp-project
-          lake env leanchecker > ../leanchecker.log 2>&1
+          lake env leanchecker QuantumTuringPatterns > ../leanchecker.log 2>&1
           status=$?
           cat ../leanchecker.log
           exit "$status"
