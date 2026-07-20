@@ -1,0 +1,96 @@
+name: QTP monolithic Lean diagnostic
+
+on:
+  push:
+    branches: [agent/lean-verification-20260720]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Materialize repaired sources and a monolithic diagnostic module
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf qtp-source qtp-monolithic
+          mkdir qtp-source qtp-monolithic
+          base64 --decode .lean-ci/qtp-min-project.tar.gz.b64 \
+            | tar -xzf - -C qtp-source
+          base64 --decode .lean-ci/apply_qtp_fixes.py.gz.b64 \
+            | gzip --decompress > /tmp/apply_qtp_fixes.py
+          python3 /tmp/apply_qtp_fixes.py qtp-source
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path('qtp-source/QuantumTuringPatterns')
+          order = [
+              'Basic', 'LatticeSymbol', 'TuringDesign', 'ExplicitStripe',
+              'LindbladParameters', 'ClassicalBound', 'Gaussian',
+              'EntanglementSelection', 'NumericalCertificate',
+          ]
+          output = ['import Mathlib', '', 'set_option autoImplicit false', '']
+          for name in order:
+              path = source / f'{name}.lean'
+              output += [f'/-! BEGIN {path.as_posix()} -/', '']
+              for line_number, line in enumerate(path.read_text().splitlines(), 1):
+                  if line_number == 1 and line.startswith('import '):
+                      continue
+                  if line.strip() == 'set_option autoImplicit false':
+                      continue
+                  output.append(line)
+              output += [f'/-! END {path.as_posix()} -/', '']
+          target = Path('qtp-monolithic/QuantumTuringPatternsAll.lean')
+          target.write_text('\n'.join(output) + '\n')
+          print(f'monolithic lines={len(output)}')
+          PY
+          cp qtp-source/lean-toolchain qtp-monolithic/lean-toolchain
+          cat > qtp-monolithic/lakefile.toml <<'EOF'
+          name = "qtp_monolithic_diagnostic"
+          version = "0.1.0"
+          defaultTargets = ["QuantumTuringPatternsAll"]
+
+          [[lean_lib]]
+          name = "QuantumTuringPatternsAll"
+
+          [[require]]
+          name = "mathlib"
+          git = "https://github.com/leanprover-community/mathlib4.git"
+          rev = "v4.32.0"
+          EOF
+          sha256sum qtp-monolithic/QuantumTuringPatternsAll.lean
+
+      - name: Install Lean and make the first monolithic attempt
+        continue-on-error: true
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: qtp-monolithic
+          build: true
+          use-mathlib-cache: true
+          leanchecker: false
+          nanoda: false
+
+      - name: Capture the complete monolithic diagnostic log
+        shell: bash
+        run: |
+          set +e
+          cd qtp-monolithic
+          lake build > ../monolithic-build.log 2>&1
+          status=$?
+          tail -n 320 ../monolithic-build.log
+          exit "$status"
+
+      - name: Upload monolithic diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qtp-monolithic-diagnostic
+          path: |
+            monolithic-build.log
+            qtp-monolithic/QuantumTuringPatternsAll.lean
+            qtp-monolithic/lake-manifest.json
+          if-no-files-found: warn
