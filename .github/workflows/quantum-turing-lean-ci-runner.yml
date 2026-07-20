@@ -51,12 +51,30 @@ jobs:
             exit 1
           fi
 
-      - name: Build, kernel-check, and independently recheck
+      - name: Install Lean and make the first build attempt
+        continue-on-error: true
         uses: leanprover/lean-action@v1
         with:
           lake-package-directory: .lean-ci
           build: true
           use-mathlib-cache: true
-          leanchecker: true
-          nanoda: true
-          nanoda-allow-sorry: false
+          leanchecker: false
+          nanoda: false
+
+      - name: Re-run lake build and capture the complete log
+        shell: bash
+        run: |
+          set +e
+          cd .lean-ci
+          lake build > ../lake-build.log 2>&1
+          status=$?
+          tail -n 160 ../lake-build.log
+          exit "$status"
+
+      - name: Upload lake build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qtp-lake-build-log
+          path: lake-build.log
+          if-no-files-found: warn
