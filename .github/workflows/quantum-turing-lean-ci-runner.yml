@@ -1,6 +1,8 @@
 name: Quantum Turing Patterns Lean CI runner
 
 on:
+  push:
+    branches: [agent/lean-verification-20260720]
   pull_request:
     branches: [main]
   workflow_dispatch:
