@@ -32,6 +32,7 @@ jobs:
           echo '738f8a34ed84d34fdf25874a8d31a3317c0e1446b5d74fe8738944688f963671  /tmp/apply_qtp_fixes.py' \
             | sha256sum --check
           python3 /tmp/apply_qtp_fixes.py qtp-project
+          python3 .lean-ci/apply_qtp_fixes_round2.py qtp-project
           test "$(find qtp-project/QuantumTuringPatterns -name '*.lean' | wc -l)" -eq 9
           test -f qtp-project/QuantumTuringPatterns.lean
           cd qtp-project
