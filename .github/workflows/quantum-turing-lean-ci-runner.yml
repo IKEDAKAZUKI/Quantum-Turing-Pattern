@@ -16,65 +16,51 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Materialize isolated Lean package
+      - name: Materialize exact modular Lean project
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p .lean-ci
-          printf '%s\n' 'leanprover/lean4:v4.32.0' > .lean-ci/lean-toolchain
-          cat > .lean-ci/lakefile.toml <<'EOF'
-          name = "qtp_lean_ci"
-          version = "0.1.0"
-          defaultTargets = ["QuantumTuringPatternsVerification"]
+          rm -rf qtp-project
+          mkdir qtp-project
+          base64 --decode .lean-ci/qtp-min-project.tar.gz.b64 \
+            | tee /tmp/qtp-project.tar.gz \
+            | tar -xzf - -C qtp-project
+          echo 'bd7d28eb94535b4f797dd44e9df83c1aa1ca98df5f338e13f22875acbe5fcc8a  /tmp/qtp-project.tar.gz' \
+            | sha256sum --check
+          test "$(find qtp-project/QuantumTuringPatterns -name '*.lean' | wc -l)" -eq 9
+          test -f qtp-project/QuantumTuringPatterns.lean
+          cd qtp-project
+          python3 scripts/static_audit.py --strict --write-report STATIC_AUDIT.md
+          cat lean-toolchain
+          cat lakefile.toml
 
-          [[lean_lib]]
-          name = "QuantumTuringPatternsVerification"
-
-          [[require]]
-          name = "mathlib"
-          git = "https://github.com/leanprover-community/mathlib4.git"
-          rev = "v4.32.0"
-          EOF
-          awk '
-            /base64 --decode/ { capture = 1; next }
-            capture && /^[[:space:]]*EOF[[:space:]]*$/ { exit }
-            capture { print }
-          ' .github/workflows/quantum-turing-lean-ci.yml \
-            | tr -d '[:space:]' \
-            | base64 --decode \
-            | gzip --decompress \
-            > .lean-ci/QuantumTuringPatternsVerification.lean
-          test "$(wc -l < .lean-ci/QuantumTuringPatternsVerification.lean)" -eq 1324
-          sha256sum .lean-ci/QuantumTuringPatternsVerification.lean
-          if grep -RInE '\b(sorry|admit)\b|^[[:space:]]*(axiom|unsafe)\b' \
-              .lean-ci/QuantumTuringPatternsVerification.lean; then
-            exit 1
-          fi
-
-      - name: Install Lean and make the first build attempt
+      - name: Install Lean and make the first exact build attempt
         continue-on-error: true
         uses: leanprover/lean-action@v1
         with:
-          lake-package-directory: .lean-ci
+          lake-package-directory: qtp-project
           build: true
           use-mathlib-cache: true
           leanchecker: false
           nanoda: false
 
-      - name: Re-run lake build and capture the complete log
+      - name: Re-run exact modular lake build and capture the complete log
         shell: bash
         run: |
           set +e
-          cd .lean-ci
+          cd qtp-project
           lake build > ../lake-build.log 2>&1
           status=$?
-          tail -n 160 ../lake-build.log
+          tail -n 240 ../lake-build.log
           exit "$status"
 
-      - name: Upload lake build log
+      - name: Upload exact-project verification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qtp-lake-build-log
-          path: lake-build.log
+          name: qtp-exact-project-verification
+          path: |
+            lake-build.log
+            qtp-project/STATIC_AUDIT.md
+            qtp-project/lake-manifest.json
           if-no-files-found: warn
