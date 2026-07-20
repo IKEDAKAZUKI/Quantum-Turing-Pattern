@@ -1,0 +1,60 @@
+name: Quantum Turing Patterns Lean CI runner
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Materialize isolated Lean package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .lean-ci
+          printf '%s\n' 'leanprover/lean4:v4.32.0' > .lean-ci/lean-toolchain
+          cat > .lean-ci/lakefile.toml <<'EOF'
+          name = "qtp_lean_ci"
+          version = "0.1.0"
+          defaultTargets = ["QuantumTuringPatternsVerification"]
+
+          [[lean_lib]]
+          name = "QuantumTuringPatternsVerification"
+
+          [[require]]
+          name = "mathlib"
+          git = "https://github.com/leanprover-community/mathlib4.git"
+          rev = "v4.32.0"
+          EOF
+          awk '
+            /base64 --decode/ { capture = 1; next }
+            capture && /^[[:space:]]*EOF[[:space:]]*$/ { exit }
+            capture { print }
+          ' .github/workflows/quantum-turing-lean-ci.yml \
+            | tr -d '[:space:]' \
+            | base64 --decode \
+            | gzip --decompress \
+            > .lean-ci/QuantumTuringPatternsVerification.lean
+          test "$(wc -l < .lean-ci/QuantumTuringPatternsVerification.lean)" -eq 1324
+          sha256sum .lean-ci/QuantumTuringPatternsVerification.lean
+          if grep -RInE '\b(sorry|admit)\b|^[[:space:]]*(axiom|unsafe)\b' \
+              .lean-ci/QuantumTuringPatternsVerification.lean; then
+            exit 1
+          fi
+
+      - name: Build, kernel-check, and independently recheck
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: .lean-ci
+          build: true
+          use-mathlib-cache: true
+          leanchecker: true
+          nanoda: true
+          nanoda-allow-sorry: false
