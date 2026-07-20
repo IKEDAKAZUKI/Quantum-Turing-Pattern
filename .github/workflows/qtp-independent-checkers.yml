@@ -35,28 +35,39 @@ jobs:
           cd qtp-project
           python3 scripts/static_audit.py --strict --write-report STATIC_AUDIT.md
 
-      - name: Kernel build and bundled leanchecker
-        id: leancheck
+      - name: Install the pinned Lean toolchain
         uses: leanprover/lean-action@v1
         with:
           lake-package-directory: qtp-project
-          build: true
-          use-mathlib-cache: true
-          leanchecker: true
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: false
+          use-github-cache: false
+          leanchecker: false
           nanoda: false
 
-      - name: Record checker status
-        if: always()
+      - name: Run explicit kernel build and bundled leanchecker
         shell: bash
-        env:
-          BUILD_STATUS: ${{ steps.leancheck.outputs.build-status }}
-          STEP_OUTCOME: ${{ steps.leancheck.outcome }}
         run: |
+          set -euo pipefail
+          set -o pipefail
+          cd qtp-project
           {
-            echo "lean-action-outcome=$STEP_OUTCOME"
-            echo "lake-build-status=$BUILD_STATUS"
-            echo "leanchecker-requested=true"
-          } | tee independent-check-status.txt
+            echo '=== TOOLCHAIN ==='
+            lean --version
+            lake --version
+            echo '=== RESOLVE DEPENDENCIES ==='
+            lake update
+            echo '=== MATHLIB CACHE ==='
+            lake exe cache get
+            echo '=== LEAN KERNEL BUILD ==='
+            lake build
+            echo '=== BUNDLED LEANCHECKER ==='
+            lake env leanchecker
+            echo '=== INDEPENDENT CHECK COMPLETE ==='
+          } 2>&1 | tee ../independent-check.log
 
       - name: Upload independent-check evidence
         if: always()
@@ -64,7 +75,7 @@ jobs:
         with:
           name: qtp-independent-check-evidence
           path: |
-            independent-check-status.txt
+            independent-check.log
             qtp-project/STATIC_AUDIT.md
             qtp-project/lake-manifest.json
           if-no-files-found: warn
