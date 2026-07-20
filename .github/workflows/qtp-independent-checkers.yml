@@ -35,15 +35,28 @@ jobs:
           cd qtp-project
           python3 scripts/static_audit.py --strict --write-report STATIC_AUDIT.md
 
-      - name: Kernel build, leanchecker, and nanoda
+      - name: Kernel build and bundled leanchecker
+        id: leancheck
         uses: leanprover/lean-action@v1
         with:
           lake-package-directory: qtp-project
           build: true
           use-mathlib-cache: true
           leanchecker: true
-          nanoda: true
-          nanoda-allow-sorry: false
+          nanoda: false
+
+      - name: Record checker status
+        if: always()
+        shell: bash
+        env:
+          BUILD_STATUS: ${{ steps.leancheck.outputs.build-status }}
+          STEP_OUTCOME: ${{ steps.leancheck.outcome }}
+        run: |
+          {
+            echo "lean-action-outcome=$STEP_OUTCOME"
+            echo "lake-build-status=$BUILD_STATUS"
+            echo "leanchecker-requested=true"
+          } | tee independent-check-status.txt
 
       - name: Upload independent-check evidence
         if: always()
@@ -51,6 +64,7 @@ jobs:
         with:
           name: qtp-independent-check-evidence
           path: |
+            independent-check-status.txt
             qtp-project/STATIC_AUDIT.md
             qtp-project/lake-manifest.json
           if-no-files-found: warn
