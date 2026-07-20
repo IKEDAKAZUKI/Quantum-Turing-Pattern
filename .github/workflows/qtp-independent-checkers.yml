@@ -1,0 +1,56 @@
+name: QTP independent Lean checkers
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  independent-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Materialize the exact verified source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf qtp-project
+          mkdir qtp-project
+          base64 --decode .lean-ci/qtp-min-project.tar.gz.b64 \
+            | tee /tmp/qtp-project.tar.gz \
+            | tar -xzf - -C qtp-project
+          echo 'bd7d28eb94535b4f797dd44e9df83c1aa1ca98df5f338e13f22875acbe5fcc8a  /tmp/qtp-project.tar.gz' \
+            | sha256sum --check
+          base64 --decode .lean-ci/apply_qtp_fixes.py.gz.b64 \
+            | gzip --decompress > /tmp/apply_qtp_fixes.py
+          echo '738f8a34ed84d34fdf25874a8d31a3317c0e1446b5d74fe8738944688f963671  /tmp/apply_qtp_fixes.py' \
+            | sha256sum --check
+          python3 /tmp/apply_qtp_fixes.py qtp-project
+          python3 .lean-ci/apply_qtp_fixes_round2.py qtp-project
+          python3 .lean-ci/apply_qtp_fixes_round3.py qtp-project
+          cd qtp-project
+          python3 scripts/static_audit.py --strict --write-report STATIC_AUDIT.md
+
+      - name: Kernel build, leanchecker, and nanoda
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: qtp-project
+          build: true
+          use-mathlib-cache: true
+          leanchecker: true
+          nanoda: true
+          nanoda-allow-sorry: false
+
+      - name: Upload independent-check evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qtp-independent-check-evidence
+          path: |
+            qtp-project/STATIC_AUDIT.md
+            qtp-project/lake-manifest.json
+          if-no-files-found: warn
