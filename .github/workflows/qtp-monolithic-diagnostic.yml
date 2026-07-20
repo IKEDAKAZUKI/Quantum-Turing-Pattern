@@ -25,6 +25,7 @@ jobs:
           base64 --decode .lean-ci/apply_qtp_fixes.py.gz.b64 \
             | gzip --decompress > /tmp/apply_qtp_fixes.py
           python3 /tmp/apply_qtp_fixes.py qtp-source
+          python3 .lean-ci/apply_qtp_fixes_round2.py qtp-source
           python3 - <<'PY'
           from pathlib import Path
           source = Path('qtp-source/QuantumTuringPatterns')
