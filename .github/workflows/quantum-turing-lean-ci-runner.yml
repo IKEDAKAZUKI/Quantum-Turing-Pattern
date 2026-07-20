@@ -61,6 +61,16 @@ jobs:
           tail -n 240 ../lake-build.log
           exit "$status"
 
+      - name: Check the built environment with bundled leanchecker
+        shell: bash
+        run: |
+          set +e
+          cd qtp-project
+          lake env leanchecker > ../leanchecker.log 2>&1
+          status=$?
+          cat ../leanchecker.log
+          exit "$status"
+
       - name: Upload repaired-project verification evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -68,6 +78,7 @@ jobs:
           name: qtp-repaired-project-verification
           path: |
             lake-build.log
+            leanchecker.log
             qtp-project/STATIC_AUDIT.md
             qtp-project/lake-manifest.json
           if-no-files-found: warn
