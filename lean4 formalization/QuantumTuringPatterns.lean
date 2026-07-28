@@ -1,0 +1,3 @@
+import QuantumTuringPatterns.NumericalBound
+
+set_option autoImplicit false
