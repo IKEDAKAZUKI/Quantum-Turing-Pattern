@@ -11,14 +11,14 @@
 </p>
 
 <p align="center">
-  <a href="display/"><strong>Public display</strong></a>
+  <a href="display/"><strong>Interactive Pattern Explorer</strong></a>
   &nbsp;·&nbsp;
   <a href="reproduction/"><strong>Numerical reproduction</strong></a>
   &nbsp;·&nbsp;
   <a href="lean4%20formalization/"><strong>Lean 4 formalization</strong></a>
 </p>
 
-This repository accompanies **Quantum Turing Patterns**. It separates reader-facing visualizations from the numerical reproduction workflow and the Lean 4 formalization of the algebraic core.
+This repository accompanies **Quantum Turing Patterns**. It separates the interactive, reader-facing exploration tools from the numerical reproduction workflow and the Lean 4 formalization of the algebraic core.
 
 ## Highlights
 
@@ -32,15 +32,37 @@ This repository accompanies **Quantum Turing Patterns**. It separates reader-fac
 
 | Path | Contents |
 |---|---|
-| [`display/`](display/) | Lightweight public gallery and direct links to the stripe, spot, and labyrinth movies. |
+| [`display/`](display/) | Interactive entry point, runnable Jupyter notebooks, and direct links to the stripe, spot, and labyrinth movies. |
 | [`reproduction/`](reproduction/) | Numerical code, compact reference data, figure generation, and scientific verification. |
 | [`lean4 formalization/`](lean4%20formalization/) | Lean 4 project for the spectral design, parameter map, stripe coefficients, and Gaussian formulas. |
 
-The display and reproduction workflows are intentionally separate: `display/` is optimized for readers, while `reproduction/` contains the scientific calculations and verification tools.
+The interactive explorer and the reproduction workflow are intentionally separate: the explorer is designed for direct experimentation and visualization, while `reproduction/` contains the paper-scale calculations and verification tools.
 
-## Public display
+## Interactive Pattern Explorer
 
-Open [`display/`](display/) to view the reference movies. The animation above is a lightweight loop prepared for the repository landing page; clicking it opens the full-resolution Labyrinth MP4.
+The display package includes three Jupyter entry points:
+
+- **[Portable Explorer](Quantum%20turing%20patterns-1.0.0/qtp_explorer_portable.ipynb)** — recommended for most readers; it uses a standard Python kernel and falls back to a regular notebook preview when widget controls are unavailable.
+- **[Research Explorer](Quantum%20turing%20patterns-1.0.0/qtp_explorer.ipynb)** — the full interactive interface for varying initial conditions, following the time evolution, and saving selected results.
+- **[Exhibit Notebook](Quantum%20turing%20patterns-1.0.0/qtp_exhibit.ipynb)** — a streamlined presentation of the precomputed stripe, spot, and labyrinth movies.
+
+To launch the full Research Explorer:
+
+```bash
+cd "Quantum turing patterns-1.0.0"
+conda env create -f environment.yml
+conda activate qtp-display
+python launch_qtp_explorer.py
+```
+
+For a standard Jupyter environment, open the portable notebook directly:
+
+```bash
+cd "Quantum turing patterns-1.0.0"
+jupyter lab qtp_explorer_portable.ipynb
+```
+
+See [`display/README.md`](display/README.md) for the notebook roles and direct movie links.
 
 ## Numerical reproduction
 
