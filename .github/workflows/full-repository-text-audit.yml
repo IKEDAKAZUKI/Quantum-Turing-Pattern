@@ -16,167 +16,113 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Scan every tracked file and comment
+      - name: Scan all tracked files, comments, and notebook text
         shell: bash
         run: |
           python - <<'PY'
-          from __future__ import annotations
+          from pathlib import Path
+          import ast, io, json, re, subprocess, tokenize
 
-          import ast
-          import io
-          import json
-          import pathlib
-          import re
-          import subprocess
-          import tokenize
-          from collections import Counter
-
-          root = pathlib.Path('.')
-          report = root / '.repository-language-final.txt'
+          report = Path('.repository-language-final.txt')
           excluded = {
               '.github/workflows/full-repository-text-audit.yml',
               '.repository-language-final.txt',
           }
-          tracked = sorted(
+          files = sorted(
               p for p in subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')
               if p and p not in excluded
           )
+          hard = re.compile(
+              r'(?i)(?:\bchatgpt\b|\bopenai\b|\bllm\b|large language model|'
+              r'ai[- ]assisted|generative[- ]ai|machine[- ]generated|generated draft|'
+              r'feedback implementation|repair note|revision history|private development|'
+              r'internal memo|conversation transcript|prompt history|scratchpad|sealed run|'
+              r'artifact id|run id|\btodo\b|\bfixme\b|\btbd\b|placeholder|replace me|'
+              r'insert here|XXXX|the corresponding article result|SCOPE\.md|museum exhibit|'
+              r'plotting certificate|Turing certificate helpers|time-step robustness|'
+              r'Quantum Turing Patterns: A Constructive Quantum Markov Realization|'
+              r'Quantum Turing Patterns in Lindblad Lattices|2707\.XXXX)'
+          )
+          style = re.compile(
+              r'(?i)\b(?:delve|seamless|comprehensive|leverage|harness|pivotal|intricate|'
+              r'realm|landscape|underscore|facilitate|notably|importantly|moreover|'
+              r'furthermore|architecture|certificate|protocol)\b|'
+              r'(?i)\bfor completeness\b|it is worth (?:noting|emphasizing)|'
+              r'\bthis gives (?:the|a)\b|\bwe first\b'
+          )
 
-          hard_patterns = {
-              'AI_OR_LLM': re.compile(r'(?i)\b(?:chatgpt|openai|large language model|\bllm\b|ai[- ]assisted|generative[- ]ai|machine[- ]generated|generated draft)\b'),
-              'INTERNAL_PROCESS': re.compile(r'(?i)\b(?:feedback implementation|repair note|revision history|private development|internal memo|conversation transcript|prompt history|scratchpad|sealed run|artifact id|run id)\b'),
-              'PLACEHOLDER': re.compile(r'(?i)\b(?:todo|fixme|tbd|placeholder|replace me|insert here)\b|XXXX'),
-              'STALE_PUBLIC_TEXT': re.compile(r'(?i)(?:the corresponding article result|SCOPE\.md|museum exhibit|plotting certificate|Turing certificate helpers|time-step robustness|Quantum Turing Patterns: A Constructive Quantum Markov Realization|Quantum Turing Patterns in Lindblad Lattices|2707\.XXXX)'),
-          }
-          style_patterns = {
-              'delve': re.compile(r'(?i)\bdelv(?:e|es|ed|ing)\b'),
-              'seamless': re.compile(r'(?i)\bseamless(?:ly)?\b'),
-              'comprehensive': re.compile(r'(?i)\bcomprehensive(?:ly)?\b'),
-              'leverage': re.compile(r'(?i)\bleverag(?:e|es|ed|ing)\b'),
-              'harness': re.compile(r'(?i)\bharness(?:es|ed|ing)?\b'),
-              'pivotal': re.compile(r'(?i)\bpivotal\b'),
-              'intricate': re.compile(r'(?i)\bintricate\b'),
-              'realm': re.compile(r'(?i)\brealm\b'),
-              'landscape': re.compile(r'(?i)\blandscape\b'),
-              'underscore': re.compile(r'(?i)\bunderscor(?:e|es|ed|ing)\b'),
-              'facilitate': re.compile(r'(?i)\bfacilitat(?:e|es|ed|ing)\b'),
-              'notably': re.compile(r'(?i)\bnotably\b'),
-              'importantly': re.compile(r'(?i)\bimportantly\b'),
-              'moreover': re.compile(r'(?i)\bmoreover\b'),
-              'furthermore': re.compile(r'(?i)\bfurthermore\b'),
-              'for_completeness': re.compile(r'(?i)\bfor completeness\b'),
-              'worth_noting': re.compile(r'(?i)\bit is worth (?:noting|emphasizing)\b'),
-              'this_gives': re.compile(r'(?i)\bthis gives (?:the|a)\b'),
-              'we_first': re.compile(r'(?i)\bwe first\b'),
-              'architecture': re.compile(r'(?i)\barchitecture\b'),
-              'certificate': re.compile(r'(?i)\bcertificate\b'),
-              'protocol': re.compile(r'(?i)\bprotocol\b'),
-          }
+          hard_hits, style_hits, binary_hits = [], [], []
+          text_count = binary_count = 0
+          python_comments = python_docstrings = lean_comments = 0
+          notebook_markdown = notebook_comments = 0
 
-          def decode(data: bytes):
-              if b'\0' in data[:8192]:
-                  return None
-              try:
-                  return data.decode('utf-8')
-              except UnicodeDecodeError:
-                  return None
-
-          def lineno(text: str, pos: int):
-              return text.count('\n', 0, pos) + 1
-
-          def context(text: str, pos: int):
-              ln = lineno(text, pos)
-              lines = text.splitlines()
-              return ln, (lines[ln - 1].strip() if lines else '')[:320]
-
-          hard_hits = []
-          style_hits = []
-          binary_hits = []
-          text_files = 0
-          binary_files = 0
-          prose_blocks = 0
-          python_comments = 0
-          python_docstrings = 0
-          lean_comments = 0
-          notebook_markdown = 0
-          notebook_comments = 0
-          file_types = Counter()
-
-          for rel in tracked:
-              path = root / rel
-              if not path.is_file():
-                  continue
+          for rel in files:
+              path = Path(rel)
               data = path.read_bytes()
-              file_types[path.suffix.lower() or '<none>'] += 1
-              text = decode(data)
+              try:
+                  text = data.decode('utf-8') if b'\0' not in data[:8192] else None
+              except UnicodeDecodeError:
+                  text = None
               if text is None:
-                  binary_files += 1
+                  binary_count += 1
                   for raw in re.findall(rb'[\x20-\x7e]{8,}', data):
-                      s = raw.decode('latin-1', errors='ignore')
-                      for name, pat in hard_patterns.items():
-                          if pat.search(s):
-                              binary_hits.append((rel, name, s[:250]))
+                      value = raw.decode('latin-1', errors='ignore')
+                      if hard.search(value):
+                          binary_hits.append((rel, value[:240]))
                   continue
 
-              text_files += 1
-              for name, pat in hard_patterns.items():
-                  for m in pat.finditer(text):
-                      ln, snippet = context(text, m.start())
-                      hard_hits.append((rel, ln, name, snippet))
-              for name, pat in style_patterns.items():
-                  for m in pat.finditer(text):
-                      ln, snippet = context(text, m.start())
-                      style_hits.append((rel, ln, name, snippet))
+              text_count += 1
+              lines = text.splitlines()
+              for match in hard.finditer(text):
+                  line = text.count('\n', 0, match.start()) + 1
+                  hard_hits.append((rel, line, lines[line - 1].strip()[:300]))
+              for match in style.finditer(text):
+                  line = text.count('\n', 0, match.start()) + 1
+                  style_hits.append((rel, line, lines[line - 1].strip()[:300]))
 
-              suffix = path.suffix.lower()
-              if suffix == '.py':
+              if path.suffix == '.py':
                   try:
-                      for tok in tokenize.generate_tokens(io.StringIO(text).readline):
-                          if tok.type == tokenize.COMMENT:
-                              python_comments += 1
-                              prose_blocks += 1
-                  except (tokenize.TokenError, IndentationError):
+                      python_comments += sum(
+                          tok.type == tokenize.COMMENT
+                          for tok in tokenize.generate_tokens(io.StringIO(text).readline)
+                      )
+                  except Exception:
                       pass
                   try:
                       tree = ast.parse(text)
-                      for node in ast.walk(tree):
-                          if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and ast.get_docstring(node, clean=False):
-                              python_docstrings += 1
-                              prose_blocks += 1
+                      python_docstrings += sum(
+                          bool(ast.get_docstring(node, clean=False))
+                          for node in ast.walk(tree)
+                          if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+                      )
                   except SyntaxError as exc:
-                      hard_hits.append((rel, exc.lineno or 1, 'PYTHON_SYNTAX', str(exc)))
-              elif suffix == '.lean':
-                  count = len(re.findall(r'(?m)^\s*--', text)) + len(re.findall(r'/-[\s\S]*?-/', text))
-                  lean_comments += count
-                  prose_blocks += count
-              elif suffix == '.ipynb':
+                      hard_hits.append((rel, exc.lineno or 1, f'Python syntax error: {exc}'))
+              elif path.suffix == '.lean':
+                  lean_comments += len(re.findall(r'(?m)^\s*--', text)) + len(re.findall(r'/-[\s\S]*?-/', text))
+              elif path.suffix == '.ipynb':
                   try:
-                      nb = json.loads(text)
-                      for cell in nb.get('cells', []):
+                      notebook = json.loads(text)
+                      for cell in notebook.get('cells', []):
                           source = ''.join(cell.get('source', []))
                           if cell.get('cell_type') == 'markdown':
                               notebook_markdown += 1
-                              prose_blocks += 1
                           elif cell.get('cell_type') == 'code':
                               try:
-                                  for tok in tokenize.generate_tokens(io.StringIO(source).readline):
-                                      if tok.type == tokenize.COMMENT:
-                                          notebook_comments += 1
-                                          prose_blocks += 1
+                                  notebook_comments += sum(
+                                      tok.type == tokenize.COMMENT
+                                      for tok in tokenize.generate_tokens(io.StringIO(source).readline)
+                                  )
                               except Exception:
                                   pass
                   except Exception as exc:
-                      hard_hits.append((rel, 1, 'NOTEBOOK_PARSE', repr(exc)))
-              elif suffix in {'.md', '.rst', '.txt', '.html', '.htm', '.tex', '.bib', '.cff'}:
-                  prose_blocks += 1
+                      hard_hits.append((rel, 1, f'Notebook parse error: {exc!r}'))
 
           out = [
               'FINAL REPOSITORY LANGUAGE AUDIT',
-              '=' * 80,
-              f'Tracked files scanned: {len(tracked)}',
-              f'UTF-8 text files: {text_files}',
-              f'Binary/non-UTF8 files: {binary_files}',
-              f'Human-facing/comment blocks counted: {prose_blocks}',
+              '=' * 72,
+              f'Tracked files scanned: {len(files)}',
+              f'UTF-8 text files: {text_count}',
+              f'Binary/non-UTF8 files: {binary_count}',
               f'Python comments: {python_comments}',
               f'Python docstrings: {python_docstrings}',
               f'Lean comment blocks: {lean_comments}',
@@ -185,32 +131,21 @@ jobs:
               f'Hard hits: {len(hard_hits)}',
               f'Binary hard hits: {len(binary_hits)}',
               f'Style-phrase hits: {len(style_hits)}',
-              '',
-              '[FILE TYPES]',
+              '', '[HARD HITS]',
           ]
-          out.extend(f'{ext}\t{count}' for ext, count in sorted(file_types.items()))
-          out += ['', '[HARD HITS]']
-          out.extend(f'{p}:{ln}\t{name}\t{text}' for p, ln, name, text in hard_hits)
-          if not hard_hits:
-              out.append('NONE')
+          out += [f'{p}:{n}\t{s}' for p, n, s in hard_hits] or ['NONE']
           out += ['', '[BINARY HARD HITS]']
-          out.extend(f'{p}\t{name}\t{text}' for p, name, text in binary_hits)
-          if not binary_hits:
-              out.append('NONE')
-          out += ['', '[STYLE-PHRASE HITS FOR MANUAL REVIEW]']
-          out.extend(f'{p}:{ln}\t{name}\t{text}' for p, ln, name, text in style_hits)
-          if not style_hits:
-              out.append('NONE')
-          out += ['', '[ALL TRACKED FILES]']
-          out.extend(tracked)
-
+          out += [f'{p}\t{s}' for p, s in binary_hits] or ['NONE']
+          out += ['', '[STYLE-PHRASE HITS]']
+          out += [f'{p}:{n}\t{s}' for p, n, s in style_hits] or ['NONE']
+          out += ['', '[ALL TRACKED FILES]'] + files
           report.write_text('\n'.join(out) + '\n', encoding='utf-8')
-          print('\n'.join(out[:30]))
+          print('\n'.join(out[:25]))
           if hard_hits or binary_hits:
-              raise SystemExit('Hard repository-language findings remain; inspect the committed report.')
+              raise SystemExit('Repository language audit found hard issues.')
           PY
 
-      - name: Commit final audit report
+      - name: Commit audit report
         if: always()
         shell: bash
         run: |
