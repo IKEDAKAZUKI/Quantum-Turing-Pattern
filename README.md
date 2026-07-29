@@ -1,17 +1,15 @@
 # Quantum Turing Patterns
 
 <p align="center">
-  <a href="Quantum%20turing%20patterns-1.0.0/display/display_labyrinth_pattern.mp4">
-    <img
-      src="https://raw.githubusercontent.com/IKEDAKAZUKI/Quantum-Turing-Pattern/main/display/assets/labyrinth-loop.gif"
-      alt="Formation of a labyrinth quantum Turing pattern"
-      width="640"
-    >
-  </a>
+  <img
+    src="display/assets/labyrinth-loop.gif"
+    alt="Formation of a labyrinth quantum Turing pattern"
+    width="640"
+  >
 </p>
 
 <p align="center">
-  <em>Labyrinth pattern formation — continuously looping GIF preview. Click the animation to open the full-resolution MP4.</em>
+  <em>Labyrinth pattern formation — animated GIF preview.</em>
 </p>
 
 <p align="center">
