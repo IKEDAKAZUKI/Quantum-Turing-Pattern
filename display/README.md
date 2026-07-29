@@ -1,14 +1,18 @@
 # Interactive Pattern Explorer
 
-This page is the reader-facing entry point for exploring the Quantum Turing Patterns display. The Jupyter notebooks run the display code directly, while the numerical workflows used for the paper remain separate in [`../reproduction/`](../reproduction/).
+This directory is the reader-facing entry point for exploring the Quantum Turing Patterns display. The Jupyter notebooks run the display code directly, while the numerical workflows used for the paper remain separate in [`../reproduction/`](../reproduction/).
 
 <p align="center">
   <a href="../Quantum%20turing%20patterns-1.0.0/display/display_labyrinth_pattern.mp4">
-    <img src="assets/labyrinth-loop.gif" alt="Formation of a labyrinth quantum Turing pattern" width="640">
+    <img
+      src="https://raw.githubusercontent.com/IKEDAKAZUKI/Quantum-Turing-Pattern/main/display/assets/labyrinth-loop.gif"
+      alt="Formation of a labyrinth quantum Turing pattern"
+      width="640"
+    >
   </a>
 </p>
 
-<p align="center"><em>Click the animation for the full-resolution Labyrinth movie.</em></p>
+<p align="center"><em>Labyrinth pattern formation — continuously looping GIF preview. Click the animation to open the full-resolution MP4.</em></p>
 
 ## Run the Jupyter explorers
 
@@ -44,6 +48,6 @@ python launch_qtp_explorer.py
 - [Spot MP4](../Quantum%20turing%20patterns-1.0.0/display/display_spot_pattern.mp4)
 - [Stripe MP4](../Quantum%20turing%20patterns-1.0.0/display/display_stripe_pattern.mp4)
 
-The looping GIF is optimized for GitHub. The MP4 files retain the full-resolution display output.
+The GIF above is optimized for continuous playback on GitHub. The MP4 files retain the full-resolution display output.
 
 For paper-scale regeneration, reference data, and scientific verification, use [`../reproduction/`](../reproduction/).

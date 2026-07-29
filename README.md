@@ -2,12 +2,16 @@
 
 <p align="center">
   <a href="Quantum%20turing%20patterns-1.0.0/display/display_labyrinth_pattern.mp4">
-    <img src="display/assets/labyrinth-loop.gif" alt="Formation of a labyrinth quantum Turing pattern" width="720">
+    <img
+      src="https://raw.githubusercontent.com/IKEDAKAZUKI/Quantum-Turing-Pattern/main/display/assets/labyrinth-loop.gif"
+      alt="Formation of a labyrinth quantum Turing pattern"
+      width="640"
+    >
   </a>
 </p>
 
 <p align="center">
-  <em>Formation of the Labyrinth pattern. Click the animation to open the full-resolution movie.</em>
+  <em>Labyrinth pattern formation — continuously looping GIF preview. Click the animation to open the full-resolution MP4.</em>
 </p>
 
 <p align="center">
@@ -18,7 +22,7 @@
   <a href="lean4%20formalization/"><strong>Lean 4 formalization</strong></a>
 </p>
 
-This repository accompanies **Quantum Turing Patterns**. It separates the interactive, reader-facing exploration tools from the numerical reproduction workflow and the Lean 4 formalization of the algebraic core.
+This repository accompanies **Quantum Turing Patterns**. It separates the reader-facing display from the numerical reproduction workflow and the Lean 4 formalization of the algebraic core.
 
 ## Highlights
 
@@ -36,7 +40,7 @@ This repository accompanies **Quantum Turing Patterns**. It separates the intera
 | [`reproduction/`](reproduction/) | Numerical code, compact reference data, figure generation, and scientific verification. |
 | [`lean4 formalization/`](lean4%20formalization/) | Lean 4 project for the spectral design, parameter map, stripe coefficients, and Gaussian formulas. |
 
-The interactive explorer and the reproduction workflow are intentionally separate: the explorer is designed for direct experimentation and visualization, while `reproduction/` contains the paper-scale calculations and verification tools.
+The display and reproduction workflows are intentionally separate: `display/` is optimized for direct exploration and visualization, while `reproduction/` contains the paper-scale calculations and verification tools.
 
 ## Interactive Pattern Explorer
 
