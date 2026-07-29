@@ -2,14 +2,14 @@
 
 <p align="center">
   <img
-    src="display/assets/labyrinth-loop.gif"
+    src="display/assets/labyrinth-animation.gif"
     alt="Formation of a labyrinth quantum Turing pattern"
     width="640"
   >
 </p>
 
 <p align="center">
-  <em>Labyrinth pattern formation — animated GIF preview.</em>
+  <em>Labyrinth pattern formation — continuously looping GIF.</em>
 </p>
 
 <p align="center">
