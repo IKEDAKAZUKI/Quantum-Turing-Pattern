@@ -9,6 +9,14 @@ verification records needed to reproduce them.
 **Author:** Kazuki Ikeda  
 **License:** MIT  
 
+<p align="center">
+  <img
+    src="qtp_exhibit_image"
+    alt="available in qtp_exhibit.ipynb"
+    width="640"
+  >
+</p>
+
 ## Package contents
 
 - `qtp_explorer.ipynb` provides the interactive research interface.
