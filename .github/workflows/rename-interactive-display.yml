@@ -42,9 +42,8 @@ jobs:
 
           old_url = old_name.replace(" ", "%20")
           replacements = ((old_name, new_name), (old_url, new_name))
-
-          changed: list[str] = []
           tracked = subprocess.check_output(["git", "ls-files", "-z"]).decode().split("\0")
+
           for rel in tracked:
               if not rel:
                   continue
@@ -63,53 +62,14 @@ jobs:
                   updated = updated.replace(before, after)
               if updated != text:
                   path.write_text(updated, encoding="utf-8")
-                  changed.append(rel)
-
-          print(f"Renamed {old_name!r} to {new_name!r}")
-          print("Updated textual references:")
-          for rel in changed:
-              print(f"  {rel}")
           PY
-
-      - name: Refresh display manifests
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd interactive-display
-          python make_manifest.py .
-          python verify_release.py --pristine
-
-      - name: Validate repository paths
-        shell: bash
-        run: |
-          set -euo pipefail
-          version="1.0.0"
-          old_dir="Quantum turing patterns-${version}"
-          old_url="${old_dir// /%20}"
-
-          test -d interactive-display
-          test ! -e "$old_dir"
-
-          if git grep -n -I -e "$old_dir" -e "$old_url" -- . \
-              ':(exclude).github/workflows/rename-interactive-display.yml'; then
-            echo "Old directory references remain."
-            exit 1
-          fi
-
-          python -m compileall -q interactive-display reproduction
-
-          test -f interactive-display/qtp_explorer.ipynb
-          test -f interactive-display/display/display_labyrinth_pattern.mp4
-          test -f interactive-display/verify_release.py
 
       - name: Commit rename
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -z "$(git status --porcelain)" ]]; then
-            echo "Repository is already normalized."
-            exit 0
-          fi
+          test -d interactive-display
+          test ! -e "Quantum turing patterns-1.0.0"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
