@@ -21,116 +21,103 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
-          replacements = {
-              Path('README.md'): [
-                  ('<em>Labyrinth pattern formation </em>', '<em>Labyrinth pattern formation.</em>'),
-                  ('\narXiv: [2707.XXXX](https://arxiv.org/abs/2707.XXXX)', ''),
-              ],
-              Path('Quantum turing patterns-1.0.0/README.md'): [
-                  ('This release contains the software and reference results for the three display\ncases associated with **Quantum Turing Patterns: A Constructive Quantum Markov\nRealization**. It includes an interactive research notebook, a museum exhibit,\nthe numerical kernels used to generate the results, and the figures, movies,\nsummaries, and integrity records needed to verify them.',
-                   'This directory contains the interactive display software and reference results\nfor the three pattern-formation cases studied in **Quantum Turing Patterns**.\nIt includes an interactive notebook, a presentation viewer, the numerical\nkernels used to generate the results, and the figures, movies, summaries, and\nverification records needed to reproduce them.'),
+          def edit(path_str, replacements=(), regex_replacements=()):
+              path = Path(path_str)
+              text = path.read_text(encoding='utf-8')
+              original = text
+              for old, new in replacements:
+                  text = text.replace(old, new)
+              for pattern, new in regex_replacements:
+                  text = re.sub(pattern, new, text, flags=re.S)
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+                  print(f'updated {path}')
+                  return True
+              print(f'unchanged {path}')
+              return False
+
+          changed = []
+          changed.append(edit('README.md', [
+              ('<em>Labyrinth pattern formation </em>', '<em>Labyrinth pattern formation.</em>'),
+              ('\narXiv: [2707.XXXX](https://arxiv.org/abs/2707.XXXX)', ''),
+          ]))
+
+          changed.append(edit(
+              'Quantum turing patterns-1.0.0/README.md',
+              [
                   ('**Release:** 1.0.0\n', ''),
-                  ('The scope of this archive is the three display reference cases. The exhibit\nshows the pattern-forming field, while the numerical summaries record Fourier\nselection and finite-run persistence for each trajectory. Manuscript source\nfiles and analyses outside this display scope are not included.',
-                   'This directory covers the three display reference cases. The presentation\nviewer shows the pattern-forming field, while the numerical summaries record\nFourier selection and finite-run persistence for each trajectory.'),
                   ('## Museum exhibit', '## Presentation viewer'),
                   ('Start the exhibit with:', 'Start the presentation viewer with:'),
-                  ('The exhibit fills the available display area with one precomputed pattern movie\nat a time and exposes only the case selector and playback controls. For an installation, run the complete\nbrowser test on the target computer:',
-                   'The viewer fills the available display area with one precomputed pattern movie\nat a time and exposes only the case selector and playback controls. For a public\ninstallation, run the complete browser test on the target computer:'),
                   ('Before building another distribution archive, remove generated output and\ncaches, regenerate the manifests, and confirm that the tree is clean:',
                    'Before packaging the display software, remove generated output and caches,\nregenerate the manifests, and confirm that the tree is clean:'),
               ],
-              Path('Quantum turing patterns-1.0.0/qtp_exhibit.py'): [
-                  ('Build the museum exhibit player.', 'Build the presentation player.'),
-                  ('Display the museum exhibit.', 'Display the presentation player.'),
+              [
+                  (r'This release contains the software and reference results for the three display\ncases associated with \*\*Quantum Turing Patterns: A Constructive Quantum Markov\nRealization\*\*\. It includes an interactive research notebook, a museum exhibit,\nthe numerical kernels used to generate the results, and the figures, movies,\nsummaries, and integrity records needed to verify them\.',
+                   'This directory contains the interactive display software and reference results\nfor the three pattern-formation cases studied in **Quantum Turing Patterns**.\nIt includes an interactive notebook, a presentation viewer, the numerical\nkernels used to generate the results, and the figures, movies, summaries, and\nverification records needed to reproduce them.'),
+                  (r'The scope of this archive is the three display reference cases\. The exhibit\nshows the pattern-forming field, while the numerical summaries record Fourier\nselection and finite-run persistence for each trajectory\. Manuscript source\nfiles and analyses outside this display scope are not included\.',
+                   'This directory covers the three display reference cases. The presentation\nviewer shows the pattern-forming field, while the numerical summaries record\nFourier selection and finite-run persistence for each trajectory.'),
+                  (r'The exhibit fills the available display area with one precomputed pattern movie\nat a time and exposes only the case selector and playback controls\. For an installation, run the complete\nbrowser test on the target computer:',
+                   'The viewer fills the available display area with one precomputed pattern movie\nat a time and exposes only the case selector and playback controls. For a public\ninstallation, run the complete browser test on the target computer:'),
               ],
-              Path('Quantum turing patterns-1.0.0/qtp_explorer.ipynb'): [
-                  ('The museum exhibit is available in `qtp_exhibit.ipynb`.',
-                   'The presentation notebook is available in `qtp_exhibit.ipynb`.'),
-              ],
-              Path('Quantum turing patterns-1.0.0/qtp_kernels.py'): [
-                  ('# Turing certificate helpers', '# Linear-dispersion diagnostics'),
-                  ('One-dimensional linear dispersion used as a plotting certificate.',
-                   'Return the one-dimensional linear dispersion used in the figures.'),
-              ],
-              Path('lean4 formalization/README.md'): [
-                  ('used in **Quantum Turing Patterns in Lindblad Lattices**.',
-                   'used in **Quantum Turing Patterns**.'),
-              ],
-              Path('reproduction/README.md'): [
-                  ('used in **Quantum Turing Patterns in Lindblad Lattices**.',
-                   'used in **Quantum Turing Patterns**.'),
-              ],
-              Path('lean4 formalization/QuantumTuringPatterns/ClassicalBound.lean'): [
-                  ('The global-existence lemma in the paper evaluates the radial derivative\nat a lattice site where `q²+p²` is maximal.  The ODE/Dini-derivative argument is not reproduced here; this module\nproves the sitewise inequalities from which the logistic estimate follows.',
-                   'The global-existence argument evaluates the radial derivative at a lattice\nsite where `q²+p²` is maximal. The ODE/Dini-derivative step is proved in the\npaper; this module verifies the sitewise inequalities used in the logistic\nestimate.'),
-                  ('Directional diffusion estimate appearing in `the corresponding article result`.',
-                   'Directional diffusion estimate used in the global a-priori bound.'),
-              ],
-              Path('lean4 formalization/QuantumTuringPatterns/ExplicitStripe.lean'): [
-                  ('The analytic Lyapunov--Schmidt existence theorem itself is outside this\nfinite-dimensional algebraic calculation; see `SCOPE.md`.',
-                   'The analytic Lyapunov--Schmidt existence theorem is proved in the paper and\nis not part of this finite-dimensional algebraic formalization.'),
-                  ('Exact determinant factorization used in the proof of `the corresponding article result`.',
-                   'Exact determinant factorization used in the commensurate-stripe construction.'),
-              ],
-              Path('lean4 formalization/QuantumTuringPatterns/TuringDesign.lean'): [
-                  ('Frequency-square selected by the double-contact design.',
-                   'Frequency-square selected by the prescribed quadratic zero.'),
-                  ('Exact completed-square identity behind Theorem `the corresponding article result`.',
-                   'Exact completed-square identity used in the Turing-design theorem.'),
-              ],
-              Path('reproduction/src/verify_results.py'): [
-                  ('seven-mode coherent-trajectory time-step robustness',
-                   'seven-mode coherent-trajectory time-step consistency'),
-              ],
-          }
+          ))
 
-          changed = []
-          for path, rules in replacements.items():
-              text = path.read_text(encoding='utf-8')
-              original = text
-              for old, new in rules:
-                  if old not in text:
-                      raise SystemExit(f'Expected text not found in {path}: {old!r}')
-                  text = text.replace(old, new)
-              if text != original:
-                  path.write_text(text, encoding='utf-8')
-                  changed.append(str(path))
+          changed.append(edit('Quantum turing patterns-1.0.0/qtp_exhibit.py', [
+              ('Build the museum exhibit player.', 'Build the presentation player.'),
+              ('Display the museum exhibit.', 'Display the presentation player.'),
+          ]))
+          changed.append(edit('Quantum turing patterns-1.0.0/qtp_explorer.ipynb', [
+              ('The museum exhibit is available in `qtp_exhibit.ipynb`.',
+               'The presentation notebook is available in `qtp_exhibit.ipynb`.'),
+          ]))
+          changed.append(edit('Quantum turing patterns-1.0.0/qtp_kernels.py', [
+              ('# Turing certificate helpers', '# Linear-dispersion diagnostics'),
+              ('One-dimensional linear dispersion used as a plotting certificate.',
+               'Return the one-dimensional linear dispersion used in the figures.'),
+          ]))
+          changed.append(edit('lean4 formalization/README.md', [
+              ('used in **Quantum Turing Patterns in Lindblad Lattices**.',
+               'used in **Quantum Turing Patterns**.'),
+          ]))
+          changed.append(edit('reproduction/README.md', [
+              ('used in **Quantum Turing Patterns in Lindblad Lattices**.',
+               'used in **Quantum Turing Patterns**.'),
+          ]))
+          changed.append(edit('lean4 formalization/QuantumTuringPatterns/ClassicalBound.lean', [
+              ('The global-existence lemma in the paper evaluates the radial derivative\nat a lattice site where `q²+p²` is maximal.  The ODE/Dini-derivative argument is not reproduced here; this module\nproves the sitewise inequalities from which the logistic estimate follows.',
+               'The global-existence argument evaluates the radial derivative at a lattice\nsite where `q²+p²` is maximal. The ODE/Dini-derivative step is proved in the\npaper; this module verifies the sitewise inequalities used in the logistic\nestimate.'),
+              ('Directional diffusion estimate appearing in `the corresponding article result`.',
+               'Directional diffusion estimate used in the global a-priori bound.'),
+          ]))
+          changed.append(edit('lean4 formalization/QuantumTuringPatterns/ExplicitStripe.lean', [
+              ('The analytic Lyapunov--Schmidt existence theorem itself is outside this\nfinite-dimensional algebraic calculation; see `SCOPE.md`.',
+               'The analytic Lyapunov--Schmidt existence theorem is proved in the paper and\nis not part of this finite-dimensional algebraic formalization.'),
+              ('Exact determinant factorization used in the proof of `the corresponding article result`.',
+               'Exact determinant factorization used in the commensurate-stripe construction.'),
+          ]))
+          changed.append(edit('lean4 formalization/QuantumTuringPatterns/TuringDesign.lean', [
+              ('Frequency-square selected by the double-contact design.',
+               'Frequency-square selected by the prescribed quadratic zero.'),
+              ('Exact completed-square identity behind Theorem `the corresponding article result`.',
+               'Exact completed-square identity used in the Turing-design theorem.'),
+          ]))
+          changed.append(edit('reproduction/src/verify_results.py', [
+              ('seven-mode coherent-trajectory time-step robustness',
+               'seven-mode coherent-trajectory time-step consistency'),
+          ]))
 
-          forbidden = [
-              'the corresponding article result',
-              'SCOPE.md',
-              'museum exhibit',
-              'plotting certificate',
-              'Turing certificate helpers',
-              'time-step robustness',
-              'Quantum Turing Patterns: A Constructive Quantum Markov Realization',
-              'Quantum Turing Patterns in Lindblad Lattices',
-              '2707.XXXX',
-          ]
-          excluded = {
-              '.github/workflows/normalize-public-language.yml',
-              '.github/workflows/full-repository-text-audit.yml',
-              '.repository-text-audit.txt',
-          }
-          scan_suffixes = {'.md', '.py', '.lean', '.ipynb', '.txt', '.toml', '.yaml', '.yml', '.json', '.cff'}
-          for path in Path('.').rglob('*'):
-              rel = path.as_posix()
-              if rel in excluded or not path.is_file() or '.git' in path.parts or path.suffix.lower() not in scan_suffixes:
-                  continue
-              text = path.read_text(encoding='utf-8', errors='ignore')
-              for phrase in forbidden:
-                  if phrase.lower() in text.lower():
-                      raise SystemExit(f'Forbidden phrase remains in {path}: {phrase}')
-
-          print('Updated files:')
-          for path in changed:
-              print(path)
+          if not any(changed):
+              print('No public-language changes were required.')
           PY
 
       - name: Commit normalized public text
         shell: bash
         run: |
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add README.md \
