@@ -108,9 +108,15 @@ jobs:
               'Quantum Turing Patterns in Lindblad Lattices',
               '2707.XXXX',
           ]
+          excluded = {
+              '.github/workflows/normalize-public-language.yml',
+              '.github/workflows/full-repository-text-audit.yml',
+              '.repository-text-audit.txt',
+          }
           scan_suffixes = {'.md', '.py', '.lean', '.ipynb', '.txt', '.toml', '.yaml', '.yml', '.json', '.cff'}
           for path in Path('.').rglob('*'):
-              if not path.is_file() or '.git' in path.parts or path.suffix.lower() not in scan_suffixes:
+              rel = path.as_posix()
+              if rel in excluded or not path.is_file() or '.git' in path.parts or path.suffix.lower() not in scan_suffixes:
                   continue
               text = path.read_text(encoding='utf-8', errors='ignore')
               for phrase in forbidden:
