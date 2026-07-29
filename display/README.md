@@ -1,6 +1,6 @@
-# Interactive Pattern Explorer
+# Public display
 
-This directory is the reader-facing entry point for exploring the Quantum Turing Patterns display. The Jupyter notebooks run the display code directly, while the numerical workflows used for the paper remain separate in [`../reproduction/`](../reproduction/).
+This directory is the lightweight, reader-facing entry point for the Quantum Turing Patterns movies. The interactive notebooks and display-generation tools are kept separately in [`../interactive-display/`](../interactive-display/), while the paper-scale numerical workflow is in [`../reproduction/`](../reproduction/).
 
 <p align="center">
   <img
@@ -12,40 +12,34 @@ This directory is the reader-facing entry point for exploring the Quantum Turing
 
 <p align="center"><em>Labyrinth pattern formation — continuously looping GIF.</em></p>
 
-## Run the Jupyter explorers
+## Interactive explorer
 
-### Portable Explorer — recommended
+- **[Portable Explorer](../interactive-display/qtp_explorer_portable.ipynb)** — standard Python-kernel entry point.
+- **[Research Explorer](../interactive-display/qtp_explorer.ipynb)** — full interactive controls.
+- **[Exhibit Notebook](../interactive-display/qtp_exhibit.ipynb)** — presentation view of the reference movies.
 
-[`qtp_explorer_portable.ipynb`](../Quantum%20turing%20patterns-1.0.0/qtp_explorer_portable.ipynb) uses a standard Python kernel. It lets readers explore the three reference patterns, follow their time evolution, and save selected results. When interactive widgets are unavailable, it runs a preview with the default settings in an ordinary notebook cell.
-
-```bash
-cd "Quantum turing patterns-1.0.0"
-conda env create -f environment.yml
-conda activate qtp-display
-jupyter lab qtp_explorer_portable.ipynb
-```
-
-### Research Explorer — full controls
-
-[`qtp_explorer.ipynb`](../Quantum%20turing%20patterns-1.0.0/qtp_explorer.ipynb) provides the full widget-based interface for varying initial conditions, inspecting the evolution, and saving figures, movies, and numerical summaries. The launcher verifies the interactive environment and installs the dedicated `QTP Display` kernel when needed.
+To launch the full explorer from the repository root:
 
 ```bash
-cd "Quantum turing patterns-1.0.0"
+cd interactive-display
 conda env create -f environment.yml
 conda activate qtp-display
 python launch_qtp_explorer.py
 ```
 
-### Exhibit Notebook — presentation mode
+For a standard Jupyter environment:
 
-[`qtp_exhibit.ipynb`](../Quantum%20turing%20patterns-1.0.0/qtp_exhibit.ipynb) presents the precomputed stripe, spot, and labyrinth movies without the research controls.
+```bash
+cd interactive-display
+jupyter lab qtp_explorer_portable.ipynb
+```
 
 ## Reference movies
 
-- [Labyrinth MP4](../Quantum%20turing%20patterns-1.0.0/display/display_labyrinth_pattern.mp4)
-- [Spot MP4](../Quantum%20turing%20patterns-1.0.0/display/display_spot_pattern.mp4)
-- [Stripe MP4](../Quantum%20turing%20patterns-1.0.0/display/display_stripe_pattern.mp4)
+- [Labyrinth MP4](../interactive-display/display/display_labyrinth_pattern.mp4)
+- [Spot MP4](../interactive-display/display/display_spot_pattern.mp4)
+- [Stripe MP4](../interactive-display/display/display_stripe_pattern.mp4)
 
-The animated GIF above is embedded directly for continuous playback on GitHub. The MP4 files provide the full-resolution outputs.
+The GIF above is embedded directly for continuous playback on GitHub. The MP4 files provide the full-resolution outputs.
 
-For paper-scale regeneration, reference data, and scientific verification, use [`../reproduction/`](../reproduction/).
+For numerical regeneration, reference data, and scientific verification, use [`../reproduction/`](../reproduction/).
