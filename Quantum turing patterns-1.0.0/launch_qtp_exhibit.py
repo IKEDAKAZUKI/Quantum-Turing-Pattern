@@ -16,8 +16,9 @@ NOTEBOOK_NAME = "qtp_exhibit.ipynb"
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Launch the Quantum Turing Patterns museum exhibit as a localhost-only "
-            "Voilà application. Notebook code and the Jupyter file browser are hidden."
+            "Launch the Quantum Turing Patterns presentation viewer as a "
+            "localhost-only Voilà application. Notebook code and the Jupyter "
+            "file browser are hidden."
         )
     )
     parser.add_argument("--port", type=int, default=8866)
@@ -61,7 +62,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     if args.check_only:
-        print("Voilà, the exhibit assets, and the QTP kernel are ready.")
+        print("Voilà, the presentation assets, and the QTP kernel are ready.")
         print(f"Python: {sys.executable}")
         print(f"Kernel: {kernel_message}")
         return 0
@@ -87,7 +88,7 @@ def main(argv: list[str] | None = None) -> int:
     if not args.no_browser:
         command.remove("--no-browser")
     command.extend(extra)
-    print("Launching the QTP exhibit on localhost:")
+    print("Launching the QTP presentation viewer on localhost:")
     print("  " + " ".join(json.dumps(part) for part in command))
     return subprocess.call(command, cwd=root, env=environment)
 
