@@ -151,6 +151,9 @@ python verify_release.py --pristine
 ```
 
 ## Citation and license
+K. Ikeda,  
+**“Quantum Turing Patterns,”**  
+[`Quantum_Turing_Patterns__Kazuki_Ikeda(2026).pdf`](Quantum_Turing_Patterns__Kazuki_Ikeda(2026).pdf) 
 
-Citation metadata are provided in `CITATION.cff`. The software is released
+The software is released
 under the MIT License; see `LICENSE`.
