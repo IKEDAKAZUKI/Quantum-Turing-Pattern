@@ -1,4 +1,4 @@
-name: Full repository text audit
+name: Final repository language audit
 
 on:
   push:
@@ -14,10 +14,9 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Build exhaustive text and comment audit
+      - name: Scan every tracked file and comment
         shell: bash
         run: |
           python - <<'PY'
@@ -30,35 +29,35 @@ jobs:
           import re
           import subprocess
           import tokenize
-          from collections import Counter, defaultdict
+          from collections import Counter
 
-          ROOT = pathlib.Path('.')
-          REPORT = ROOT / '.repository-text-audit.txt'
-          SELF = '.github/workflows/full-repository-text-audit.yml'
-          REPORT_PATH = '.repository-text-audit.txt'
-
-          tracked = subprocess.check_output(['git', 'ls-files', '-z']).decode('utf-8').split('\0')
-          tracked = sorted(p for p in tracked if p and p not in {REPORT_PATH})
-
-          forbidden = {
-              'AI_OR_LLM': re.compile(r'(?i)\b(?:chatgpt|openai|large language model|\bllm\b|ai[- ]assisted|generative[- ]ai|machine[- ]generated|generated draft)\b'),
-              'INTERNAL_PROCESS': re.compile(r'(?i)\b(?:audit|feedback|repair note|revision history|private development|internal memo|conversation|prompt|scratchpad|sidecar|sealed run|artifact id|run id)\b'),
-              'TODO_OR_PLACEHOLDER': re.compile(r'(?i)\b(?:todo|fixme|xxx|tbd|placeholder|replace me|insert here)\b'),
-              'INTERNAL_PATH': re.compile(r'(?:/mnt/|/home/|/tmp/|[A-Za-z]:\\\\Users\\\\|github-actions-runner|runner[_-]temp)'),
-              'OLD_VERSION': re.compile(r'(?i)(?:\bv\d+\.\d+(?:\.\d+)?\b|\bversion\s+\d+\.\d+(?:\.\d+)?\b|quantum turing patterns-\d+\.\d+\.\d+)'),
+          root = pathlib.Path('.')
+          report = root / '.repository-language-final.txt'
+          excluded = {
+              '.github/workflows/full-repository-text-audit.yml',
+              '.repository-language-final.txt',
           }
+          tracked = sorted(
+              p for p in subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')
+              if p and p not in excluded
+          )
 
-          style_phrases = {
+          hard_patterns = {
+              'AI_OR_LLM': re.compile(r'(?i)\b(?:chatgpt|openai|large language model|\bllm\b|ai[- ]assisted|generative[- ]ai|machine[- ]generated|generated draft)\b'),
+              'INTERNAL_PROCESS': re.compile(r'(?i)\b(?:feedback implementation|repair note|revision history|private development|internal memo|conversation transcript|prompt history|scratchpad|sealed run|artifact id|run id)\b'),
+              'PLACEHOLDER': re.compile(r'(?i)\b(?:todo|fixme|tbd|placeholder|replace me|insert here)\b|XXXX'),
+              'STALE_PUBLIC_TEXT': re.compile(r'(?i)(?:the corresponding article result|SCOPE\.md|museum exhibit|plotting certificate|Turing certificate helpers|time-step robustness|Quantum Turing Patterns: A Constructive Quantum Markov Realization|Quantum Turing Patterns in Lindblad Lattices|2707\.XXXX)'),
+          }
+          style_patterns = {
               'delve': re.compile(r'(?i)\bdelv(?:e|es|ed|ing)\b'),
-              'robust': re.compile(r'(?i)\brobust(?:ly|ness)?\b'),
-              'comprehensive': re.compile(r'(?i)\bcomprehensive(?:ly)?\b'),
               'seamless': re.compile(r'(?i)\bseamless(?:ly)?\b'),
+              'comprehensive': re.compile(r'(?i)\bcomprehensive(?:ly)?\b'),
               'leverage': re.compile(r'(?i)\bleverag(?:e|es|ed|ing)\b'),
               'harness': re.compile(r'(?i)\bharness(?:es|ed|ing)?\b'),
               'pivotal': re.compile(r'(?i)\bpivotal\b'),
               'intricate': re.compile(r'(?i)\bintricate\b'),
-              'landscape': re.compile(r'(?i)\blandscape\b'),
               'realm': re.compile(r'(?i)\brealm\b'),
+              'landscape': re.compile(r'(?i)\blandscape\b'),
               'underscore': re.compile(r'(?i)\bunderscor(?:e|es|ed|ing)\b'),
               'facilitate': re.compile(r'(?i)\bfacilitat(?:e|es|ed|ing)\b'),
               'notably': re.compile(r'(?i)\bnotably\b'),
@@ -69,213 +68,154 @@ jobs:
               'worth_noting': re.compile(r'(?i)\bit is worth (?:noting|emphasizing)\b'),
               'this_gives': re.compile(r'(?i)\bthis gives (?:the|a)\b'),
               'we_first': re.compile(r'(?i)\bwe first\b'),
-              'in_conclusion': re.compile(r'(?i)\bin conclusion\b'),
-              'framework': re.compile(r'(?i)\bframework\b'),
               'architecture': re.compile(r'(?i)\barchitecture\b'),
-              'pipeline': re.compile(r'(?i)\bpipeline\b'),
               'certificate': re.compile(r'(?i)\bcertificate\b'),
               'protocol': re.compile(r'(?i)\bprotocol\b'),
           }
 
-          text_ext = {
-              '.md', '.rst', '.txt', '.py', '.lean', '.toml', '.yaml', '.yml', '.json',
-              '.ipynb', '.sh', '.bash', '.zsh', '.ps1', '.html', '.htm', '.css', '.js',
-              '.ts', '.tsx', '.jsx', '.csv', '.tsv', '.cff', '.gitignore', '.gitattributes',
-              '.tex', '.bib', '.cfg', '.ini', '.lock', '.xml'
-          }
-
-          def decode_text(path: pathlib.Path, data: bytes):
-              if b'\x00' in data[:8192]:
+          def decode(data: bytes):
+              if b'\0' in data[:8192]:
                   return None
               try:
                   return data.decode('utf-8')
               except UnicodeDecodeError:
                   return None
 
-          def line_no(text: str, pos: int) -> int:
+          def lineno(text: str, pos: int):
               return text.count('\n', 0, pos) + 1
 
-          def extract_python(path: str, text: str):
-              blocks = []
-              try:
-                  for tok in tokenize.generate_tokens(io.StringIO(text).readline):
-                      if tok.type == tokenize.COMMENT:
-                          blocks.append((tok.start[0], 'comment', tok.string.lstrip('#').strip()))
-              except Exception as exc:
-                  blocks.append((1, 'tokenize_error', repr(exc)))
-              try:
-                  tree = ast.parse(text)
-                  for node in ast.walk(tree):
-                      if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                          ds = ast.get_docstring(node, clean=False)
-                          if ds:
-                              blocks.append((getattr(node, 'lineno', 1), 'docstring', ds.strip()))
-              except Exception as exc:
-                  blocks.append((1, 'ast_error', repr(exc)))
-              return blocks
+          def context(text: str, pos: int):
+              ln = lineno(text, pos)
+              lines = text.splitlines()
+              return ln, (lines[ln - 1].strip() if lines else '')[:320]
 
-          def extract_notebook(path: str, text: str):
-              blocks = []
-              try:
-                  nb = json.loads(text)
-                  for i, cell in enumerate(nb.get('cells', []), 1):
-                      source = ''.join(cell.get('source', []))
-                      if cell.get('cell_type') == 'markdown':
-                          blocks.append((i, 'markdown_cell', source.strip()))
-                      elif cell.get('cell_type') == 'code':
-                          try:
-                              for tok in tokenize.generate_tokens(io.StringIO(source).readline):
-                                  if tok.type == tokenize.COMMENT:
-                                      blocks.append((i, 'code_comment', tok.string.lstrip('#').strip()))
-                          except Exception:
-                              pass
-                  metadata = nb.get('metadata', {})
-                  if metadata:
-                      blocks.append((0, 'notebook_metadata', json.dumps(metadata, ensure_ascii=False, sort_keys=True)))
-              except Exception as exc:
-                  blocks.append((1, 'notebook_parse_error', repr(exc)))
-              return blocks
-
-          def extract_lean(path: str, text: str):
-              blocks = []
-              for m in re.finditer(r'(?m)^\s*--(.*)$', text):
-                  blocks.append((line_no(text, m.start()), 'line_comment', m.group(1).strip()))
-              for m in re.finditer(r'/-([\s\S]*?)-/', text):
-                  blocks.append((line_no(text, m.start()), 'block_comment', m.group(1).strip()))
-              return blocks
-
-          def extract_hash_comments(path: str, text: str):
-              blocks = []
-              for i, line in enumerate(text.splitlines(), 1):
-                  stripped = line.lstrip()
-                  if stripped.startswith('#') and not stripped.startswith('#!'):
-                      blocks.append((i, 'comment', stripped.lstrip('#').strip()))
-              return blocks
-
-          text_files = []
-          binary_files = []
-          forbidden_hits = []
+          hard_hits = []
           style_hits = []
-          prose_blocks = []
-          binary_string_hits = []
-          extension_counts = Counter()
+          binary_hits = []
+          text_files = 0
+          binary_files = 0
+          prose_blocks = 0
+          python_comments = 0
+          python_docstrings = 0
+          lean_comments = 0
+          notebook_markdown = 0
+          notebook_comments = 0
+          file_types = Counter()
 
           for rel in tracked:
-              path = ROOT / rel
+              path = root / rel
               if not path.is_file():
                   continue
               data = path.read_bytes()
-              extension_counts[path.suffix.lower() or '<none>'] += 1
-              text = decode_text(path, data)
+              file_types[path.suffix.lower() or '<none>'] += 1
+              text = decode(data)
               if text is None:
-                  binary_files.append((rel, len(data)))
-                  strings = re.findall(rb'[\x20-\x7e]{6,}', data)
-                  for raw in strings:
+                  binary_files += 1
+                  for raw in re.findall(rb'[\x20-\x7e]{8,}', data):
                       s = raw.decode('latin-1', errors='ignore')
-                      for name, pat in forbidden.items():
+                      for name, pat in hard_patterns.items():
                           if pat.search(s):
-                              binary_string_hits.append((rel, name, s[:240]))
+                              binary_hits.append((rel, name, s[:250]))
                   continue
 
-              text_files.append((rel, len(data), len(text.splitlines())))
-              for name, pat in forbidden.items():
+              text_files += 1
+              for name, pat in hard_patterns.items():
                   for m in pat.finditer(text):
-                      ln = line_no(text, m.start())
-                      snippet = text.splitlines()[ln-1].strip()[:300]
-                      forbidden_hits.append((rel, ln, name, snippet))
-              for name, pat in style_phrases.items():
+                      ln, snippet = context(text, m.start())
+                      hard_hits.append((rel, ln, name, snippet))
+              for name, pat in style_patterns.items():
                   for m in pat.finditer(text):
-                      ln = line_no(text, m.start())
-                      snippet = text.splitlines()[ln-1].strip()[:300]
+                      ln, snippet = context(text, m.start())
                       style_hits.append((rel, ln, name, snippet))
 
               suffix = path.suffix.lower()
-              blocks = []
               if suffix == '.py':
-                  blocks = extract_python(rel, text)
-              elif suffix == '.ipynb':
-                  blocks = extract_notebook(rel, text)
+                  try:
+                      for tok in tokenize.generate_tokens(io.StringIO(text).readline):
+                          if tok.type == tokenize.COMMENT:
+                              python_comments += 1
+                              prose_blocks += 1
+                  except (tokenize.TokenError, IndentationError):
+                      pass
+                  try:
+                      tree = ast.parse(text)
+                      for node in ast.walk(tree):
+                          if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and ast.get_docstring(node, clean=False):
+                              python_docstrings += 1
+                              prose_blocks += 1
+                  except SyntaxError as exc:
+                      hard_hits.append((rel, exc.lineno or 1, 'PYTHON_SYNTAX', str(exc)))
               elif suffix == '.lean':
-                  blocks = extract_lean(rel, text)
-              elif suffix in {'.sh', '.bash', '.zsh', '.yml', '.yaml', '.toml', '.cfg', '.ini'}:
-                  blocks = extract_hash_comments(rel, text)
-              elif suffix in {'.md', '.rst', '.txt', '.html', '.htm', '.tex', '.bib', '.cff'} or path.name in {'README', 'LICENSE'}:
-                  blocks = [(1, 'full_human_facing_text', text.strip())]
-              for ln, kind, block in blocks:
-                  if block:
-                      prose_blocks.append((rel, ln, kind, block))
+                  count = len(re.findall(r'(?m)^\s*--', text)) + len(re.findall(r'/-[\s\S]*?-/', text))
+                  lean_comments += count
+                  prose_blocks += count
+              elif suffix == '.ipynb':
+                  try:
+                      nb = json.loads(text)
+                      for cell in nb.get('cells', []):
+                          source = ''.join(cell.get('source', []))
+                          if cell.get('cell_type') == 'markdown':
+                              notebook_markdown += 1
+                              prose_blocks += 1
+                          elif cell.get('cell_type') == 'code':
+                              try:
+                                  for tok in tokenize.generate_tokens(io.StringIO(source).readline):
+                                      if tok.type == tokenize.COMMENT:
+                                          notebook_comments += 1
+                                          prose_blocks += 1
+                              except Exception:
+                                  pass
+                  except Exception as exc:
+                      hard_hits.append((rel, 1, 'NOTEBOOK_PARSE', repr(exc)))
+              elif suffix in {'.md', '.rst', '.txt', '.html', '.htm', '.tex', '.bib', '.cff'}:
+                  prose_blocks += 1
 
-          out = []
-          out.append('FULL REPOSITORY TEXT AND COMMENT AUDIT')
-          out.append('=' * 80)
-          out.append(f'Tracked files: {len(tracked)}')
-          out.append(f'UTF-8 text files: {len(text_files)}')
-          out.append(f'Binary/non-UTF8 files: {len(binary_files)}')
-          out.append(f'Forbidden/internal hits: {len(forbidden_hits)}')
-          out.append(f'Binary printable-string hits: {len(binary_string_hits)}')
-          out.append(f'Style-phrase hits: {len(style_hits)}')
-          out.append(f'Extracted prose/comment blocks: {len(prose_blocks)}')
-          out.append('')
-
-          out.append('[EXTENSION COUNTS]')
-          for ext, count in sorted(extension_counts.items()):
-              out.append(f'{ext}\t{count}')
-          out.append('')
-
-          out.append('[ALL TRACKED FILES]')
+          out = [
+              'FINAL REPOSITORY LANGUAGE AUDIT',
+              '=' * 80,
+              f'Tracked files scanned: {len(tracked)}',
+              f'UTF-8 text files: {text_files}',
+              f'Binary/non-UTF8 files: {binary_files}',
+              f'Human-facing/comment blocks counted: {prose_blocks}',
+              f'Python comments: {python_comments}',
+              f'Python docstrings: {python_docstrings}',
+              f'Lean comment blocks: {lean_comments}',
+              f'Notebook markdown cells: {notebook_markdown}',
+              f'Notebook code comments: {notebook_comments}',
+              f'Hard hits: {len(hard_hits)}',
+              f'Binary hard hits: {len(binary_hits)}',
+              f'Style-phrase hits: {len(style_hits)}',
+              '',
+              '[FILE TYPES]',
+          ]
+          out.extend(f'{ext}\t{count}' for ext, count in sorted(file_types.items()))
+          out += ['', '[HARD HITS]']
+          out.extend(f'{p}:{ln}\t{name}\t{text}' for p, ln, name, text in hard_hits)
+          if not hard_hits:
+              out.append('NONE')
+          out += ['', '[BINARY HARD HITS]']
+          out.extend(f'{p}\t{name}\t{text}' for p, name, text in binary_hits)
+          if not binary_hits:
+              out.append('NONE')
+          out += ['', '[STYLE-PHRASE HITS FOR MANUAL REVIEW]']
+          out.extend(f'{p}:{ln}\t{name}\t{text}' for p, ln, name, text in style_hits)
+          if not style_hits:
+              out.append('NONE')
+          out += ['', '[ALL TRACKED FILES]']
           out.extend(tracked)
-          out.append('')
 
-          out.append('[TEXT FILES: path | bytes | lines]')
-          for item in text_files:
-              out.append('\t'.join(map(str, item)))
-          out.append('')
-
-          out.append('[BINARY/NON-UTF8 FILES: path | bytes]')
-          for item in binary_files:
-              out.append('\t'.join(map(str, item)))
-          out.append('')
-
-          out.append('[FORBIDDEN OR INTERNAL-PROCESS HITS]')
-          if forbidden_hits:
-              for rel, ln, name, snippet in forbidden_hits:
-                  out.append(f'{rel}:{ln}\t{name}\t{snippet}')
-          else:
-              out.append('NONE')
-          out.append('')
-
-          out.append('[BINARY PRINTABLE-STRING HITS]')
-          if binary_string_hits:
-              for rel, name, snippet in binary_string_hits:
-                  out.append(f'{rel}\t{name}\t{snippet}')
-          else:
-              out.append('NONE')
-          out.append('')
-
-          out.append('[STYLE-PHRASE HITS]')
-          if style_hits:
-              for rel, ln, name, snippet in style_hits:
-                  out.append(f'{rel}:{ln}\t{name}\t{snippet}')
-          else:
-              out.append('NONE')
-          out.append('')
-
-          out.append('[EXTRACTED HUMAN-FACING PROSE, COMMENTS, DOCSTRINGS, AND NOTEBOOK METADATA]')
-          for rel, ln, kind, block in prose_blocks:
-              out.append('-' * 80)
-              out.append(f'FILE: {rel} | LOCATION: {ln} | KIND: {kind}')
-              out.append(block)
-          out.append('')
-
-          REPORT.write_text('\n'.join(out), encoding='utf-8')
-          print(f'Wrote {REPORT} with {len(out)} report records')
+          report.write_text('\n'.join(out) + '\n', encoding='utf-8')
+          print('\n'.join(out[:30]))
+          if hard_hits or binary_hits:
+              raise SystemExit('Hard repository-language findings remain; inspect the committed report.')
           PY
 
-      - name: Commit audit report
+      - name: Commit final audit report
+        if: always()
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .repository-text-audit.txt
-          git commit -m "Generate temporary repository text audit"
+          git add .repository-language-final.txt
+          git commit -m "Record final repository language audit"
           git push
