@@ -390,7 +390,7 @@ def main() -> int:
             mode_count = int(pde[["mode_x", "mode_y"]].drop_duplicates().shape[0])
             expected_rows = 2 * mode_count
             c.add(
-                f"{case} seven-mode coherent-trajectory time-step robustness",
+                f"{case} seven-mode coherent-trajectory time-step consistency",
                 mode_count == 7 and len(pde) == expected_rows and all(ordering_by_dt) and max_pde_change < 0.02,
                 f"modes={mode_count}/7, rows={len(pde)}/{expected_rows}, minimum shell/control gap={min(gaps):.6g}, max E_LN change={max_pde_change:.6g}",
             )

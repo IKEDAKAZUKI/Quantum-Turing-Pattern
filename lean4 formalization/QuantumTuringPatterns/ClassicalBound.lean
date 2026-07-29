@@ -5,9 +5,10 @@ set_option autoImplicit false
 /-!
 # Local algebra behind the classical a-priori bound
 
-The global-existence lemma in the paper evaluates the radial derivative
-at a lattice site where `q²+p²` is maximal.  The ODE/Dini-derivative argument is not reproduced here; this module
-proves the sitewise inequalities from which the logistic estimate follows.
+The global-existence argument evaluates the radial derivative at a lattice
+site where `q²+p²` is maximal. The ODE/Dini-derivative step is proved in the
+paper; this module verifies the sitewise inequalities used in the logistic
+estimate.
 -/
 
 namespace QuantumTuringPatterns
@@ -33,7 +34,7 @@ theorem p_laplacian_at_pairwise_max
   nlinarith [sq_nonneg (p - pPlus), sq_nonneg (p - pMinus),
     sq_nonneg qPlus, sq_nonneg qMinus]
 
-/-- Directional diffusion estimate appearing in `the corresponding article result`. -/
+/-- Directional diffusion estimate used in the global a-priori bound. -/
 theorem weighted_diffusion_at_pairwise_max
     {q p qPlus pPlus qMinus pMinus Dq Dp : ℝ}
     (hPlus : qPlus ^ 2 + pPlus ^ 2 ≤ q ^ 2 + p ^ 2)

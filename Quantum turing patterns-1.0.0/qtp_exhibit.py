@@ -65,7 +65,7 @@ def exhibit_html(
     idle_seconds: float | None = None,
     playback_rate: float = 1.0,
 ) -> str:
-    """Build the museum exhibit player.
+    """Build the presentation player.
 
     The player uses the precomputed reference movies. Case switching, replay,
     pause, physical-time seeking, looping, and idle reset remain responsive
@@ -258,7 +258,7 @@ def show_exhibit(
     embed_media: bool | None = None,
     idle_seconds: float | None = None,
 ) -> None:
-    """Display the museum exhibit."""
+    """Display the presentation player."""
     if embed_media is None:
         raw = os.environ.get("QTP_EXHIBIT_EMBED_MEDIA", "1").strip().lower()
         embed_media = raw not in {"0", "false", "no", "off"}

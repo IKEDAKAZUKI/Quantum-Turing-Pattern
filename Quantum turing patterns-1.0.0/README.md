@@ -1,14 +1,13 @@
 # Quantum Turing Patterns — Interactive Display
 
-This release contains the software and reference results for the three display
-cases associated with **Quantum Turing Patterns: A Constructive Quantum Markov
-Realization**. It includes an interactive research notebook, a museum exhibit,
-the numerical kernels used to generate the results, and the figures, movies,
-summaries, and integrity records needed to verify them.
+This directory contains the interactive display software and reference results
+for the three pattern-formation cases studied in **Quantum Turing Patterns**.
+It includes an interactive notebook, a presentation viewer, the numerical
+kernels used to generate the results, and the figures, movies, summaries, and
+verification records needed to reproduce them.
 
 **Author:** Kazuki Ikeda  
 **License:** MIT  
-**Release:** 1.0.0
 
 ## Package contents
 
@@ -21,10 +20,9 @@ summaries, and integrity records needed to verify them.
 - `qtp_kernels.py`, `qtp_observables.py`, and `qtp_display.py` contain the
   numerical and visualization code used to reproduce the display results.
 
-The scope of this archive is the three display reference cases. The exhibit
-shows the pattern-forming field, while the numerical summaries record Fourier
-selection and finite-run persistence for each trajectory. Manuscript source
-files and analyses outside this display scope are not included.
+This directory covers the three display reference cases. The presentation
+viewer shows the pattern-forming field, while the numerical summaries record
+Fourier selection and finite-run persistence for each trajectory.
 
 ## Installation
 
@@ -66,17 +64,17 @@ when interactive controls are unavailable.
 Convenience launchers are provided as `start_qtp_explorer.sh` and
 `start_qtp_explorer.bat`.
 
-## Museum exhibit
+## Presentation viewer
 
-Start the exhibit with:
+Start the presentation viewer with:
 
 ```bash
 python launch_qtp_exhibit.py
 ```
 
-The exhibit fills the available display area with one precomputed pattern movie
-at a time and exposes only the case selector and playback controls. For an installation, run the complete
-browser test on the target computer:
+The viewer fills the available display area with one precomputed pattern movie
+at a time and exposes only the case selector and playback controls. For a public
+installation, run the complete browser test on the target computer:
 
 ```bash
 python verify_browser_interfaces.py --require-live-exhibit
@@ -140,8 +138,8 @@ Numerical quantities are compared with explicit tolerances. PNG and MP4 bytes
 can vary with font, renderer, or codec versions even when the numerical results
 agree.
 
-Before building another distribution archive, remove generated output and
-caches, regenerate the manifests, and confirm that the tree is clean:
+Before packaging the display software, remove generated output and caches,
+regenerate the manifests, and confirm that the tree is clean:
 
 ```bash
 rm -rf verification_runtime reproduction_output __pycache__

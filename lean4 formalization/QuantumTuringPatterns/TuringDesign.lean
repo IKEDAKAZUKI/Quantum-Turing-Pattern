@@ -25,11 +25,11 @@ def designDet (a b Dq Dp Ω ω : ℝ) : ℝ :=
 def criticalSymbol (a b Dq Dp : ℝ) : ℝ :=
   (a * Dp - b * Dq) / (2 * Dq * Dp)
 
-/-- Frequency-square selected by the double-contact design. -/
+/-- Frequency-square selected by the prescribed quadratic zero. -/
 def designedOmegaSq (a b Dq Dp : ℝ) : ℝ :=
   a * b + (a * Dp - b * Dq) ^ 2 / (4 * Dq * Dp)
 
-/-- Exact completed-square identity behind Theorem `the corresponding article result`. -/
+/-- Exact completed-square identity used in the Turing-design theorem. -/
 theorem designDet_factorization
     {a b Dq Dp Ω ω : ℝ}
     (hDq : Dq ≠ 0) (hDp : Dp ≠ 0)

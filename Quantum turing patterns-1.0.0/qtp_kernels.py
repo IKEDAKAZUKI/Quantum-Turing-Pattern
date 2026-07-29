@@ -283,7 +283,7 @@ def init_noise(L, seed=0, scale=1e-2):
 
 
 # -----------------------------------------------------------------------------
-# Turing certificate helpers
+# Linear-dispersion diagnostics
 # -----------------------------------------------------------------------------
 def eigen_max(lam, k1, k2=0.0, Dy=0.2):
     sqrt3 = np.sqrt(3.0)
@@ -297,7 +297,7 @@ def eigen_max(lam, k1, k2=0.0, Dy=0.2):
 
 
 def linear_dispersion_curve(regime="stripe", lam=0.4, n=600):
-    """One-dimensional linear dispersion used as a plotting certificate.
+    """Return the one-dimensional linear dispersion used in the figures.
 
     For the anisotropic stripe construction this is the longitudinal k_y=0 cut.
     For the isotropic spot/labyrinth examples it is the axial cut through the

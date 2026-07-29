@@ -13,8 +13,8 @@ This module verifies the algebra used in the explicit family:
 * the stated right/left critical vectors;
 * the cubic coefficient, leading branch amplitude, and radial eigenvalue.
 
-The analytic Lyapunov--Schmidt existence theorem itself is outside this
-finite-dimensional algebraic calculation; see `SCOPE.md`.
+The analytic Lyapunov--Schmidt existence theorem is proved in the paper and
+is not part of this finite-dimensional algebraic formalization.
 -/
 
 namespace QuantumTuringPatterns
@@ -51,7 +51,7 @@ lemma explicitCriticalSymbol_in_band :
     explicitCriticalSymbol ∈ Set.Ioo (0 : ℝ) 4 := by
   simpa [explicitCriticalSymbol] using two_minus_sqrt3_mem_Ioo
 
-/-- Exact determinant factorization used in the proof of `the corresponding article result`. -/
+/-- Exact determinant factorization used in the commensurate-stripe construction. -/
 theorem explicitDet_factorization (λ ω : ℝ) :
     explicitDet λ ω =
       explicitDp * (ω - explicitCriticalSymbol) ^ 2 - λ := by

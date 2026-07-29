@@ -1,6 +1,6 @@
 # Numerical reproduction
 
-This directory contains the numerical workflows and compact reference data used in **Quantum Turing Patterns in Lindblad Lattices**. It is independent of the static display in `../display/`.
+This directory contains the numerical workflows and compact reference data used in **Quantum Turing Patterns**. It is independent of the static display in `../display/`.
 
 ## Environment
 

@@ -1,6 +1,6 @@
 # Lean 4 formalization
 
-This project verifies the finite-dimensional algebraic identities used in **Quantum Turing Patterns in Lindblad Lattices**.
+This project verifies the finite-dimensional algebraic identities used in **Quantum Turing Patterns**.
 
 ## Build
 

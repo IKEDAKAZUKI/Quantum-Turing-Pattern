@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <em>Labyrinth pattern formation </em>
+  <em>Labyrinth pattern formation.</em>
 </p>
 
 <p align="center">
@@ -98,5 +98,4 @@ The Lean toolchain and mathlib revision are pinned. The formalization verifies t
 K. Ikeda,  
 **“Quantum Turing Patterns,”**  
 [`Quantum_Turing_Patterns__Kazuki_Ikeda(2026).pdf`](Quantum_Turing_Patterns__Kazuki_Ikeda(2026).pdf) 
-arXiv: [2707.XXXX](https://arxiv.org/abs/2707.XXXX)
 
