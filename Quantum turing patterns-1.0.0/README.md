@@ -11,7 +11,7 @@ verification records needed to reproduce them.
 
 <p align="center">
   <img
-    src="qtp_exhibit_image"
+    src="qtp_exhibit_image.png"
     alt="available in qtp_exhibit.ipynb"
     width="640"
   >
