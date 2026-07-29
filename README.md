@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <em>Labyrinth pattern formation — continuously looping GIF.</em>
+  <em>Labyrinth pattern formation </em>
 </p>
 
 <p align="center">
