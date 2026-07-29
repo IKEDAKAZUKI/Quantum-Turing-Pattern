@@ -68,13 +68,14 @@ jobs:
       - name: Commit regenerated GIF
         shell: bash
         run: |
-          if git diff --quiet -- display/assets/labyrinth-animation.gif; then
+          out="display/assets/labyrinth-animation.gif"
+          if [[ -z "$(git status --porcelain -- "$out")" ]]; then
             echo "GIF is already up to date."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add display/assets/labyrinth-animation.gif
+          git add "$out"
           git commit -m "Add animated Labyrinth GIF"
           git push
