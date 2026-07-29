@@ -93,9 +93,9 @@ lake build
 
 The Lean toolchain and mathlib revision are pinned. The formalization verifies the algebraic identities used in the spectral design, Lindblad parameter map, explicit stripe coefficients, and homogeneous Gaussian analysis. See [`lean4 formalization/README.md`](lean4%20formalization/README.md) for the precise scope.
 
-### Main experimental paper
+## Reference
 
 K. Ikeda,  
 **“Quantum Turing Patterns,”**  
-arXiv: [2707.02666](https://arxiv.org/abs/2707.02666)
+arXiv: [2707.XXXX](https://arxiv.org/abs/2707.XXXX)
 
