@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           src="Quantum turing patterns-1.0.0/display/display_labyrinth_pattern.mp4"
-          out="display/assets/labyrinth-loop.gif"
+          out="display/assets/labyrinth-animation.gif"
           palette="${RUNNER_TEMP}/labyrinth-palette.png"
 
           ffmpeg -hide_banner -loglevel error -y \
@@ -49,7 +49,7 @@ jobs:
           from pathlib import Path
           from PIL import Image
 
-          path = Path("display/assets/labyrinth-loop.gif")
+          path = Path("display/assets/labyrinth-animation.gif")
           with Image.open(path) as image:
               frames = getattr(image, "n_frames", 1)
               loop = image.info.get("loop")
@@ -68,13 +68,13 @@ jobs:
       - name: Commit regenerated GIF
         shell: bash
         run: |
-          if git diff --quiet -- display/assets/labyrinth-loop.gif; then
+          if git diff --quiet -- display/assets/labyrinth-animation.gif; then
             echo "GIF is already up to date."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add display/assets/labyrinth-loop.gif
-          git commit -m "Regenerate looping Labyrinth GIF"
+          git add display/assets/labyrinth-animation.gif
+          git commit -m "Add animated Labyrinth GIF"
           git push
