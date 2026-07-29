@@ -1,0 +1,80 @@
+name: Rebuild Labyrinth GIF
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/rebuild-labyrinth-gif.yml"
+      - "Quantum turing patterns-1.0.0/display/display_labyrinth_pattern.mp4"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-gif:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install media tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --disable-pip-version-check pillow
+
+      - name: Generate looping GIF
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="Quantum turing patterns-1.0.0/display/display_labyrinth_pattern.mp4"
+          out="display/assets/labyrinth-loop.gif"
+          palette="${RUNNER_TEMP}/labyrinth-palette.png"
+
+          ffmpeg -hide_banner -loglevel error -y \
+            -i "$src" \
+            -vf "fps=8,scale=640:-2:flags=lanczos,palettegen=max_colors=128:stats_mode=diff" \
+            "$palette"
+
+          ffmpeg -hide_banner -loglevel error -y \
+            -i "$src" -i "$palette" \
+            -lavfi "fps=8,scale=640:-2:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle" \
+            -loop 0 "$out"
+
+      - name: Verify animation and infinite loop
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+
+          path = Path("display/assets/labyrinth-loop.gif")
+          with Image.open(path) as image:
+              frames = getattr(image, "n_frames", 1)
+              loop = image.info.get("loop")
+              width, height = image.size
+
+          if frames < 2:
+              raise SystemExit(f"GIF is not animated: {frames} frame")
+          if loop != 0:
+              raise SystemExit(f"GIF is not configured for infinite looping: loop={loop!r}")
+          if width < 480:
+              raise SystemExit(f"GIF is unexpectedly small: {width}x{height}")
+
+          print(f"Verified {frames} frames, {width}x{height}, infinite loop")
+          PY
+
+      - name: Commit regenerated GIF
+        shell: bash
+        run: |
+          if git diff --quiet -- display/assets/labyrinth-loop.gif; then
+            echo "GIF is already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add display/assets/labyrinth-loop.gif
+          git commit -m "Regenerate looping Labyrinth GIF"
+          git push
