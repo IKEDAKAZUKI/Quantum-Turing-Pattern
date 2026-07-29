@@ -4,13 +4,13 @@ This directory is the reader-facing entry point for exploring the Quantum Turing
 
 <p align="center">
   <img
-    src="assets/labyrinth-loop.gif"
+    src="assets/labyrinth-animation.gif"
     alt="Formation of a labyrinth quantum Turing pattern"
     width="640"
   >
 </p>
 
-<p align="center"><em>Labyrinth pattern formation — animated GIF preview.</em></p>
+<p align="center"><em>Labyrinth pattern formation — continuously looping GIF.</em></p>
 
 ## Run the Jupyter explorers
 
