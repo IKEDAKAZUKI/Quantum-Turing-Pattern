@@ -99,7 +99,5 @@ The Lean toolchain and mathlib revision are pinned. The formalization verifies t
 ## Reference
 
 K. Ikeda,  
-**“Quantum Turing Patterns,”**  
+**“Quantum Turing Patterns,” [`arXiv:2607.26331 [math-ph]`](https://arxiv.org/abs/2607.26331)**  
 [`Quantum_Turing_Patterns__Kazuki_Ikeda(2026).pdf`](Quantum_Turing_Patterns__Kazuki_Ikeda(2026).pdf)
-[`arXiv:2607.26331 [math-ph]`](https://arxiv.org/abs/2607.26331)
-
