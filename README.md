@@ -22,7 +22,7 @@
   <a href="lean4%20formalization/"><strong>Lean 4 formalization</strong></a>
 </p>
 
-This repository accompanies **Quantum Turing Patterns**. The public display, interactive explorer, numerical reproduction workflow, and Lean 4 formalization are kept in separate directories.
+This repository accompanies **Quantum Turing Patterns**. The visualization, interactive explorer, numerical reproduction workflow, and Lean 4 formalization are kept in separate directories.
 
 ## Highlights
 
