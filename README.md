@@ -4,7 +4,7 @@
   <img
     src="display/assets/labyrinth-animation_v2.gif"
     alt="Formation of a labyrinth quantum Turing pattern"
-    width="1040"
+    width="940"
   >
 </p>
 
