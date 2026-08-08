@@ -1,0 +1,84 @@
+name: Quantum Turing Patterns Lean CI runner
+
+on:
+  push:
+    branches: [agent/lean-verification-20260720]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Materialize the repaired exact modular Lean project
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf qtp-project
+          mkdir qtp-project
+          base64 --decode .lean-ci/qtp-min-project.tar.gz.b64 \
+            | tee /tmp/qtp-project.tar.gz \
+            | tar -xzf - -C qtp-project
+          echo 'bd7d28eb94535b4f797dd44e9df83c1aa1ca98df5f338e13f22875acbe5fcc8a  /tmp/qtp-project.tar.gz' \
+            | sha256sum --check
+          base64 --decode .lean-ci/apply_qtp_fixes.py.gz.b64 \
+            | gzip --decompress > /tmp/apply_qtp_fixes.py
+          echo '738f8a34ed84d34fdf25874a8d31a3317c0e1446b5d74fe8738944688f963671  /tmp/apply_qtp_fixes.py' \
+            | sha256sum --check
+          python3 /tmp/apply_qtp_fixes.py qtp-project
+          python3 .lean-ci/apply_qtp_fixes_round2.py qtp-project
+          python3 .lean-ci/apply_qtp_fixes_round3.py qtp-project
+          test "$(find qtp-project/QuantumTuringPatterns -name '*.lean' | wc -l)" -eq 9
+          test -f qtp-project/QuantumTuringPatterns.lean
+          cd qtp-project
+          python3 scripts/static_audit.py --strict --write-report STATIC_AUDIT.md
+          cat lean-toolchain
+          cat lakefile.toml
+
+      - name: Install Lean and make the first repaired build attempt
+        continue-on-error: true
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: qtp-project
+          build: true
+          use-mathlib-cache: true
+          leanchecker: false
+          nanoda: false
+
+      - name: Re-run repaired modular lake build and capture the complete log
+        shell: bash
+        run: |
+          set +e
+          cd qtp-project
+          lake build > ../lake-build.log 2>&1
+          status=$?
+          tail -n 240 ../lake-build.log
+          exit "$status"
+
+      - name: Check the built environment with bundled leanchecker
+        shell: bash
+        run: |
+          set +e
+          cd qtp-project
+          lake env leanchecker QuantumTuringPatterns > ../leanchecker.log 2>&1
+          status=$?
+          cat ../leanchecker.log
+          exit "$status"
+
+      - name: Upload repaired-project verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qtp-repaired-project-verification
+          path: |
+            lake-build.log
+            leanchecker.log
+            qtp-project/STATIC_AUDIT.md
+            qtp-project/lake-manifest.json
+          if-no-files-found: warn
