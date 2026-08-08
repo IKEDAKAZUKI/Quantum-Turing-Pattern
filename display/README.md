@@ -10,7 +10,7 @@ This directory is the lightweight, reader-facing entry point for the Quantum Tur
   >
 </p>
 
-<p align="center"><em>Labyrinth pattern formation — continuously looping GIF.</em></p>
+<p align="center"><em>Labyrinth pattern formation</em></p>
 
 ## Interactive explorer
 
