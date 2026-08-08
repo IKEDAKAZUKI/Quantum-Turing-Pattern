@@ -32,7 +32,7 @@ This repository accompanies **Quantum Turing Patterns**. The visualization, inte
 - microscopic Bragg order, Gaussian covariance dynamics, and opposite-momentum entanglement;
 - Lean 4 verification of the finite-dimensional identities used in the construction.
 
-**[`Read the popular article on LinkedIn: How I conceived this research, what was solved, why exciting`](https://www.linkedin.com/pulse/quantum-turing-patterns-kazuki-ikeda-373ic/)**  
+**[`Read the popular article on LinkedIn: how I conceived the research, what was solved, and why it is exciting.`](https://www.linkedin.com/pulse/quantum-turing-patterns-kazuki-ikeda-373ic/)**  
 
 ## Repository guide
 
